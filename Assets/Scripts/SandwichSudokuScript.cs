@@ -1,0 +1,320 @@
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using KModkit;
+using Newtonsoft.Json;
+using UnityEngine;
+
+[Serializable]
+public class SandwichSudokuData
+{
+    public List<int> grid;
+    public List<int> row_sums;
+    public List<int> col_sums;
+}
+
+public class SandwichSudokuScript : MonoBehaviour
+{
+    public KMBombInfo Bomb;
+    public KMAudio Audio;
+    public KMBombModule Module;
+    public KMSelectable moduleSelectable;
+    public TextAsset sudokuJson;
+    public Transform topLeft;
+    public GameObject squarePrefab;
+    public GameObject clueLightPrefab;
+    public KMSelectable submitButton;
+    public KMSelectable resetButton;
+    public Material colorMaterialBase;
+    public Transform columnCluesParent;
+    public Transform rowCluesParent;
+    public Transform paletteParent;
+    public GameObject paletteButtonPrefab;
+    public KMColorblindMode colorblindMode;
+    
+    private List<GameObject> _squares = new List<GameObject>();
+    private List<GameObject> _palette = new List<GameObject>();
+    private List<GameObject> _clueLights = new List<GameObject>();
+    private readonly int[] _squareIndices = new int[81];
+    private SandwichSudokuData _sandwichSudoku;
+    private int _moduleId;
+    private static int _moduleIdCounter = 1;
+    private bool _isSolved;
+    private int _selectedPaletteColor;
+
+    private static List<Color> _squareColors;
+
+    private void Start()
+    {
+        _moduleId = _moduleIdCounter++;
+        InitializeMaterials();
+        _sandwichSudoku = JsonConvert.DeserializeObject<List<SandwichSudokuData>>(sudokuJson.text).OrderBy(_ => UnityEngine.Random.value).First();
+        StartCoroutine(ResetSudoku(true));        
+        submitButton.OnInteract += () =>
+        {
+            submitButton.AddInteractionPunch(1f);
+            Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.BigButtonPress, submitButton.transform);
+            if (_isResetting || _isSolved)
+                return false;
+            if (IsValid())
+            {
+                Module.HandlePass();
+                _isSolved = true;
+            }
+            else
+                Module.HandleStrike();
+            return false;
+        };
+        resetButton.OnInteract += () =>
+        {
+            resetButton.AddInteractionPunch(1f);
+            Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.BigButtonPress, resetButton.transform);
+            if (_isResetting || _isSolved)
+                return false;
+            StartCoroutine(ResetSudoku());
+            return false;
+        };
+    }
+
+    private bool IsValid()
+    {
+        if (_squareIndices.Any(s => s == 0))
+            return false;
+        
+        var grid = new int[9][];
+        for (var index = 0; index < 9; index++)
+            grid[index] = new int[9];
+        for (var i = 0; i < 81; i++)
+            grid[i / 9][i % 9] = _squareIndices[i];
+        
+        for (var row = 0; row < 9; row++)
+        {
+            var seen = new HashSet<int>();
+            var sum = 0;
+            var between = false;
+            for (var col = 0; col < 9; col++)
+            {
+                var val = grid[row][col];
+                if (!seen.Add(val))
+                    return false;
+                if (val == 1 || val == 9)
+                {
+                    if (between)
+                        break;
+                    between = true;
+                }
+                else if (between)
+                {
+                    sum += val;
+                }
+            }
+            if (sum != _sandwichSudoku.row_sums[row])
+                return false;
+        }
+        
+        for (var col = 0; col < 9; col++)
+        {
+            var seen = new HashSet<int>();
+            var sum = 0;
+            var between = false;
+
+            for (var row = 0; row < 9; row++)
+            {
+                var val = grid[row][col];
+                if (!seen.Add(val))
+                    return false;
+
+                if (val == 1 || val == 9)
+                {
+                    if (between)
+                        break; 
+                    between = true;
+                }
+                else if (between)
+                {
+                    sum += val;
+                }
+            }
+
+            if (sum != _sandwichSudoku.col_sums[col])
+                return false;
+        }
+        
+        for (var boxRow = 0; boxRow < 3; boxRow++)
+        {
+            for (var boxCol = 0; boxCol < 3; boxCol++)
+            {
+                var seen = new HashSet<int>();
+                for (var r = 0; r < 3; r++)
+                {
+                    for (var c = 0; c < 3; c++)
+                    {
+                        var val = grid[boxRow * 3 + r][boxCol * 3 + c];
+                        if (val < 1 || val > 9 || !seen.Add(val))
+                            return false;
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
+
+    private bool _isResetting = false;
+    private IEnumerator ResetSudoku(bool fullReset = false)
+    {
+        _isResetting = true;
+        
+        foreach (var square in _squares)
+        {
+            Destroy(square);
+            yield return new WaitForSeconds(0.001f);
+        }
+        _squares.Clear();
+
+        if (fullReset)
+        {
+            foreach (var clueLight in _clueLights)
+            {
+                Destroy(clueLight);
+                yield return new WaitForSeconds(0.001f);
+            }
+            _clueLights.Clear();
+
+            foreach (var palette in _palette)
+            {
+                Destroy(palette);
+                yield return new WaitForSeconds(0.001f);
+            }
+            _palette.Clear();
+        }
+
+        yield return StartCoroutine(GenerateSquares());
+        if (fullReset)
+        {
+            yield return StartCoroutine(GeneratePalette());
+            yield return StartCoroutine(GenerateClues());
+        }
+
+        _isResetting = false;
+    }
+
+    private void InitializeMaterials()
+    {
+        _squareColors = new List<Color> { Colors.Red, Colors.Green, Colors.Blue, Colors.Purple, 
+            Colors.Yellow, Colors.Orange, Colors.Cyan, Colors.Pink, Colors.White };
+        _squareColors = _squareColors.OrderBy(_ => UnityEngine.Random.value).ToList();
+        _squareColors.Insert(0, Colors.Black);
+    }
+
+    private IEnumerator GenerateClues()
+    {
+        var offset = Vector3.zero;
+        for (var col = 0; col < 9; col++)
+        {
+            var colClue = _sandwichSudoku.col_sums[col];
+            _clueLights.Add(Instantiate(clueLightPrefab, columnCluesParent.position, Quaternion.identity));
+            _clueLights[col].transform.SetParent(columnCluesParent, false); 
+            _clueLights[col].transform.localPosition = new Vector3(offset.x, 0, offset.z);
+            offset.x += 0.012f;
+            var clueLight = _clueLights[col].GetComponent<ClueLight>();
+            clueLight.colorblindActive = colorblindMode.ColorblindModeActive;
+            clueLight.SetColor(colorMaterialBase, _squareColors[colClue / 10], _squareColors[colClue % 10]);
+            yield return new WaitForSeconds(0.001f);
+        }
+        offset = Vector3.zero;
+        for (var row = 0; row < 9; row++)
+        {
+            var rowClue = _sandwichSudoku.row_sums[row];
+            _clueLights.Add(Instantiate(clueLightPrefab, rowCluesParent.position, Quaternion.identity));
+            _clueLights[row + 9].transform.SetParent(rowCluesParent, false); 
+            _clueLights[row + 9].transform.localPosition = new Vector3(offset.x, 0, offset.z);
+            offset.z -= 0.012f;
+            var clueLight = _clueLights[row + 9].GetComponent<ClueLight>();
+            clueLight.colorblindActive = colorblindMode.ColorblindModeActive;
+            clueLight.SetColor(colorMaterialBase, _squareColors[rowClue / 10], _squareColors[rowClue % 10]);
+            yield return new WaitForSeconds(0.001f);
+        }
+    }
+
+    private IEnumerator GeneratePalette()
+    {
+        for (int col = 0; col < 10; col++)
+        {
+            var paletteSquare = Instantiate(paletteButtonPrefab, paletteParent.position, Quaternion.identity);
+            paletteSquare.transform.SetParent(paletteParent, false);
+            paletteSquare.transform.localPosition = new Vector3(0, 0, -0.011f * col);
+            paletteSquare.GetComponent<MeshRenderer>().material = new Material(colorMaterialBase) { color = _squareColors[col % 10] };
+            if (colorblindMode.ColorblindModeActive)
+                paletteSquare.GetComponentInChildren<ColorblindHelperScript>().SetFromColor(_squareColors[col % 10]);
+            AddPaletteButton(paletteSquare, col);
+            yield return new WaitForSeconds(0.001f);
+        }
+    }
+    
+    private IEnumerator GenerateSquares()
+    {
+        var offset = Vector3.zero;
+        for (var row = 0; row < 9; row++)
+        {
+            for (var col = 0; col < 9; col++)
+            {
+                var index = row * 9 + col;
+                var square = Instantiate(squarePrefab, Vector3.zero, Quaternion.identity);
+                square.transform.SetParent(topLeft, false); 
+                square.transform.localPosition = new Vector3(offset.x, 0, offset.z);
+                var value = _sandwichSudoku.grid[index];
+                _squareIndices[index] = value;
+                square.GetComponent<MeshRenderer>().material.color = _squareColors[value];
+                if (colorblindMode.ColorblindModeActive)
+                    square.GetComponentInChildren<ColorblindHelperScript>().SetFromColor(_squareColors[value]);
+                AddSquare(square, index, value == 0);
+                offset.x += 0.012f;
+                yield return new WaitForSeconds(0.001f);
+            }
+            offset.x = 0;
+            offset.z -= 0.012f;
+        }
+    }
+
+    private void AddPaletteButton(GameObject button, int index)
+    {
+        _palette.Add(button);
+        var paletteSelectable = button.GetComponent<KMSelectable>();
+        paletteSelectable.Parent = moduleSelectable;
+        moduleSelectable.Children = moduleSelectable.Children.Concat(new[] { paletteSelectable }).ToArray();
+        moduleSelectable.UpdateChildrenProperly();
+
+        paletteSelectable.OnInteract += () =>
+        {
+            _selectedPaletteColor = index;
+            return false;
+        };
+    }
+
+    private void AddSquare(GameObject square, int gridIndex, bool canInteract)
+    {
+        _squares.Add(square);
+            
+        var squareSelectable = square.GetComponent<KMSelectable>();
+        if (!canInteract)
+        {
+            squareSelectable.enabled = false;
+            return;
+        }
+        squareSelectable.Parent = moduleSelectable;
+        moduleSelectable.Children = moduleSelectable.Children.Concat(new[] { squareSelectable }).ToArray();
+        moduleSelectable.UpdateChildrenProperly();
+
+        squareSelectable.OnInteract += () =>
+        {
+            square.GetComponent<MeshRenderer>().material.color = _squareColors[_selectedPaletteColor];
+            if (colorblindMode.ColorblindModeActive)
+                square.GetComponentInChildren<ColorblindHelperScript>().SetFromColor(_squareColors[_selectedPaletteColor]);
+            _squareIndices[gridIndex] = _selectedPaletteColor;
+            return false;
+        };
+    }
+}
