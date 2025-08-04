@@ -256,8 +256,8 @@ GameObject:
   - component: {fileID: 114832996561157380}
   - component: {fileID: 114170649746464292}
   - component: {fileID: 114369119228183004}
-  - component: {fileID: 114116484072019960}
   - component: {fileID: 114606371733710652}
+  - component: {fileID: 114030302640837970}
   m_Layer: 0
   m_Name: Little Killer Sudoku
   m_TagString: Untagged
@@ -411,7 +411,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1450658311046144}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.06, y: -0.0008, z: -0.054}
+  m_LocalPosition: {x: -0.062, y: -0.0008, z: -0.058}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 4426595626858780}
@@ -442,7 +442,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1496684134786722}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.06, y: -0.0008, z: 0.054}
+  m_LocalPosition: {x: 0.062, y: -0.0008, z: 0.058}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 4426595626858780}
@@ -468,7 +468,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1058212039104322}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.054, y: -0.0008, z: 0.06}
+  m_LocalPosition: {x: -0.058, y: -0.0008, z: 0.062}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 4426595626858780}
@@ -481,7 +481,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1595213877395176}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.048, y: 0, z: 0.048}
+  m_LocalPosition: {x: -0.05, y: 0, z: 0.05}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 4426595626858780}
@@ -511,7 +511,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1417898281766452}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.054, y: -0.0008, z: -0.06}
+  m_LocalPosition: {x: 0.058, y: -0.0008, z: -0.062}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 4426595626858780}
@@ -876,7 +876,7 @@ MeshFilter:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1736037281171434}
-  m_Mesh: {fileID: 4300000, guid: 4639c1bb8bc192942b021a029b985f79, type: 3}
+  m_Mesh: {fileID: 4300000, guid: bc79f1062df387f43bfc0928f894832e, type: 3}
 --- !u!33 &33606850669159698
 MeshFilter:
   m_ObjectHideFlags: 1
@@ -933,6 +933,34 @@ TextMesh:
   m_Color:
     serializedVersion: 2
     rgba: 4278190080
+--- !u!114 &114030302640837970
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1766638626942974}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ed11701d4a94e399571b09da1e81de8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sudokuJson: {fileID: 4900000, guid: 94f0cd767e2ed5b41b0691e4bbd7c7bd, type: 3}
+  topLeft: {fileID: 4597508154524580}
+  submitButton: {fileID: 114825618425306824}
+  resetButton: {fileID: 114553325578086508}
+  squarePrefab: {fileID: 1042776606303886, guid: fadc432807140584bb01a4f46c6078b2,
+    type: 2}
+  paletteButtonPrefab: {fileID: 1288828264906338, guid: 9b5712156ec413c4ba9d7744395da062,
+    type: 2}
+  paletteParent: {fileID: 4466499236446288}
+  colorMaterialBase: {fileID: 2100000, guid: c35ac0d1c2407f044826e7983a91a00b, type: 2}
+  sudokuColorName: Blue
+  clueLightPrefab: {fileID: 1134090598181532, guid: a4862f8bcf9c52148a8761991a800f30,
+    type: 2}
+  leftCluesParent: {fileID: 4336385682407062}
+  rightCluesParent: {fileID: 4431760381720434}
+  topCluesParent: {fileID: 4478917683563730}
+  bottomCluesParent: {fileID: 4638992124060290}
 --- !u!114 &114068777479987518
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -946,38 +974,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShaderNames:
   - KT/Mobile/Diffuse
---- !u!114 &114116484072019960
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1766638626942974}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 43cb90f833e9459459273cc9c3a73f8f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Bomb: {fileID: 114832996561157380}
-  Audio: {fileID: 114446581020015642}
-  Module: {fileID: 114170649746464292}
-  moduleSelectable: {fileID: 114369119228183004}
-  sudokuJson: {fileID: 4900000, guid: 94f0cd767e2ed5b41b0691e4bbd7c7bd, type: 3}
-  topLeft: {fileID: 4597508154524580}
-  squarePrefab: {fileID: 1042776606303886, guid: fadc432807140584bb01a4f46c6078b2,
-    type: 2}
-  clueLightPrefab: {fileID: 1134090598181532, guid: a4862f8bcf9c52148a8761991a800f30,
-    type: 2}
-  submitButton: {fileID: 114825618425306824}
-  resetButton: {fileID: 114553325578086508}
-  colorMaterialBase: {fileID: 2100000, guid: c35ac0d1c2407f044826e7983a91a00b, type: 2}
-  leftCluesParent: {fileID: 4336385682407062}
-  rightCluesParent: {fileID: 4431760381720434}
-  topCluesParent: {fileID: 4478917683563730}
-  bottomCluesParent: {fileID: 4638992124060290}
-  paletteParent: {fileID: 4466499236446288}
-  paletteButtonPrefab: {fileID: 1288828264906338, guid: 9b5712156ec413c4ba9d7744395da062,
-    type: 2}
-  colorblindMode: {fileID: 114606371733710652}
 --- !u!114 &114164837009442104
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1123,7 +1119,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1cfb889a07d5fd4e9baed7960bb397f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _colorblindMode: 0
+  _colorblindMode: 1
 --- !u!114 &114724840613392786
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1136,7 +1132,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShaderNames:
-  - GUI/3D Text Shader
+  - GUI/KT 3D Text
 --- !u!114 &114788483015691872
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1221,4 +1217,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShaderNames:
-  - GUI/3D Text Shader
+  - GUI/KT 3D Text

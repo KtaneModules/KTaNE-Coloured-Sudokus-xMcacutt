@@ -15,6 +15,6 @@ MonoBehaviour:
   title: Coloured Sudokus
   author: xMcacutt
   description: '!!!MORE SUDOKU VARIANTS!!!'
-  version: 1.0.0
+  version: 1.2.0
   outputFolder: D:\SteamLibrary\steamapps\common\Keep Talking and Nobody Explodes\mods
   previewImage: {fileID: 2800000, guid: 8a6964dfbaf65a842afc99cf6020e951, type: 3}

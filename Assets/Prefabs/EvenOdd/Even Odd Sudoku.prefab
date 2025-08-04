@@ -212,8 +212,8 @@ GameObject:
   - component: {fileID: 114586403981521164}
   - component: {fileID: 114047379762363542}
   - component: {fileID: 114031519956889094}
-  - component: {fileID: 114820090546618358}
   - component: {fileID: 114313868418977552}
+  - component: {fileID: 114101015593867212}
   m_Layer: 0
   m_Name: Even Odd Sudoku
   m_TagString: Untagged
@@ -366,7 +366,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1407498003194144}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.048, y: 0, z: 0.048}
+  m_LocalPosition: {x: -0.05, y: 0, z: 0.05}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 4817920946035082}
@@ -461,7 +461,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1863829733816720}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.015, y: 0.011, z: -0.02}
+  m_LocalPosition: {x: -0.0175, y: 0.011, z: -0.0175}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4530212060318124}
@@ -732,7 +732,7 @@ MeshFilter:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1863829733816720}
-  m_Mesh: {fileID: 4300000, guid: 4639c1bb8bc192942b021a029b985f79, type: 3}
+  m_Mesh: {fileID: 4300000, guid: bc79f1062df387f43bfc0928f894832e, type: 3}
 --- !u!33 &33383078822250956
 MeshFilter:
   m_ObjectHideFlags: 1
@@ -866,6 +866,30 @@ MonoBehaviour:
   ModuleType: pinkSudoku
   ModuleDisplayName: Pink Sudoku
   RequiresTimerVisibility: 0
+--- !u!114 &114101015593867212
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1558107261514212}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b9e4eea5a8b45f980f2540ea2f5bfc4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sudokuJson: {fileID: 4900000, guid: 57f4f02f692a07a4fafda1230d8a51da, type: 3}
+  topLeft: {fileID: 4530212060318124}
+  submitButton: {fileID: 114374005285214926}
+  resetButton: {fileID: 114820570382578042}
+  squarePrefab: {fileID: 1042776606303886, guid: fadc432807140584bb01a4f46c6078b2,
+    type: 2}
+  paletteButtonPrefab: {fileID: 1288828264906338, guid: 9b5712156ec413c4ba9d7744395da062,
+    type: 2}
+  paletteParent: {fileID: 4237047323889132}
+  colorMaterialBase: {fileID: 2100000, guid: c35ac0d1c2407f044826e7983a91a00b, type: 2}
+  sudokuColorName: Pink
+  circlePrefab: {fileID: 1765827115175388, guid: 3b8b81e610bd89d4ab9446d1e4c880e3,
+    type: 2}
 --- !u!114 &114135250553938558
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -917,7 +941,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShaderNames:
-  - GUI/3D Text Shader
+  - GUI/KT 3D Text
 --- !u!114 &114263620980070256
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -942,7 +966,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1cfb889a07d5fd4e9baed7960bb397f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _colorblindMode: 0
+  _colorblindMode: 1
 --- !u!114 &114374005285214926
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1000,34 +1024,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShaderNames:
   - KT/Mobile/DiffuseTint
---- !u!114 &114820090546618358
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1558107261514212}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 82de777c1091d4747b6ec112edeb6c40, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Bomb: {fileID: 114586403981521164}
-  Audio: {fileID: 114636431843703542}
-  Module: {fileID: 114047379762363542}
-  moduleSelectable: {fileID: 114031519956889094}
-  sudokuJson: {fileID: 4900000, guid: 57f4f02f692a07a4fafda1230d8a51da, type: 3}
-  topLeft: {fileID: 4530212060318124}
-  squarePrefab: {fileID: 1042776606303886, guid: fadc432807140584bb01a4f46c6078b2,
-    type: 2}
-  circlePrefab: {fileID: 1765827115175388, guid: 3b8b81e610bd89d4ab9446d1e4c880e3,
-    type: 2}
-  submitButton: {fileID: 114374005285214926}
-  resetButton: {fileID: 114820570382578042}
-  colorMaterialBase: {fileID: 2100000, guid: c35ac0d1c2407f044826e7983a91a00b, type: 2}
-  paletteParent: {fileID: 4237047323889132}
-  paletteButtonPrefab: {fileID: 1288828264906338, guid: 9b5712156ec413c4ba9d7744395da062,
-    type: 2}
-  colorblindMode: {fileID: 114313868418977552}
 --- !u!114 &114820570382578042
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1062,7 +1058,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShaderNames:
-  - GUI/3D Text Shader
+  - GUI/KT 3D Text
 --- !u!114 &114887708607407810
 MonoBehaviour:
   m_ObjectHideFlags: 1
