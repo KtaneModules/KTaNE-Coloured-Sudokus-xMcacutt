@@ -40,8 +40,8 @@ namespace KModkit
                         offset.x += 0.012f;
                 }
                 offset.x = 0;
-                if (row % 3 != 0)
-                    offset.z -= 0.013f;
+                if (row % 3 == 2)
+                    offset.z -= 0.014f;
                 else
                     offset.z -= 0.012f;
             }
@@ -68,8 +68,8 @@ namespace KModkit
                     yield return new WaitForSeconds(0.001f);
                 }
                 offset.z = 0;
-                if (col % 3 != 0)
-                    offset.x += 0.013f;
+                if (col % 3 == 2)
+                    offset.x += 0.014f;
                 else
                     offset.x += 0.012f;
             } 
