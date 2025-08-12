@@ -323,8 +323,9 @@ namespace KModkit
             squareSelectable.OnInteract += () =>
             {
                 square.GetComponent<MeshRenderer>().material.color = SquareColours[SelectedPaletteColour];
-                if ((colorblindMode.ColorblindModeActive || settings.babyMode) && SelectedPaletteColour != 0)
-                    square.GetComponentInChildren<ColorblindHelperScript>().SetFromColor(SquareColours[SelectedPaletteColour], settings.babyMode ? SelectedPaletteColour.ToString() : null);
+                if (colorblindMode.ColorblindModeActive || settings.babyMode)
+                    square.GetComponentInChildren<ColorblindHelperScript>().SetFromColor(SquareColours[SelectedPaletteColour], 
+                        settings.babyMode && SelectedPaletteColour != 0 ? SelectedPaletteColour.ToString() : null);
                 SquareIndices[gridIndex] = SelectedPaletteColour;
                 return false;
             };

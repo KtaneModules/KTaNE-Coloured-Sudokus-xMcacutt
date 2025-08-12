@@ -373,7 +373,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 1140433859998718, guid: b972dffcba8e9cc4b9ec1c537cd97ea6, type: 2}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4978111026468768, guid: b972dffcba8e9cc4b9ec1c537cd97ea6, type: 2}
       propertyPath: m_LocalEulerAnglesHint.y
@@ -475,6 +475,10 @@ Prefab:
       propertyPath: m_RootOrder
       value: 9
       objectReference: {fileID: 0}
+    - target: {fileID: 1853686870723734, guid: 2a14b8cc6a2293f4c9da395e5081027a, type: 2}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 2a14b8cc6a2293f4c9da395e5081027a, type: 2}
   m_IsPrefabParent: 0
@@ -521,6 +525,11 @@ Prefab:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 114495401415559546, guid: 55e650f4542309e4ab92526b5b0b3daa,
+        type: 2}
+      propertyPath: sudokuJson
+      value: 
+      objectReference: {fileID: 4900000, guid: e964af38d7f1b9e4eb4e94317b0f5ac5, type: 3}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 55e650f4542309e4ab92526b5b0b3daa, type: 2}
   m_IsPrefabParent: 0
@@ -565,7 +574,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 1981584296896424, guid: 6faa830a2db362c468e12266f15d747e, type: 2}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 6faa830a2db362c468e12266f15d747e, type: 2}
