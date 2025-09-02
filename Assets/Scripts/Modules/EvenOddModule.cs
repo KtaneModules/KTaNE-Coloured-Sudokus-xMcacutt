@@ -23,9 +23,8 @@ namespace KModkit
                     var value = SudokuData.grid[index];
                     SquareIndices[index] = value;
                     square.GetComponent<MeshRenderer>().material.color = SquareColours[value];
-                    if (colorblindMode.ColorblindModeActive || settings.babyMode)
-                        square.GetComponentInChildren<ColorblindHelperScript>().SetFromColor(SquareColours[SelectedPaletteColour], 
-                            settings.babyMode && SelectedPaletteColour != 0 ? SelectedPaletteColour.ToString() : null);
+                    if ((colorblindMode.ColorblindModeActive || settings.babyMode) && value != 0)
+                        square.GetComponentInChildren<ColorblindHelperScript>().SetFromColor(SquareColours[value], settings.babyMode ? value.ToString() : null);
                     AddSquare(square, index, value == 0);
                     if (col % 3 == 2)
                         offset.x += 0.014f;

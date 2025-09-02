@@ -64,7 +64,6 @@ namespace KModkit
                     if (row2 > 5) rowOffset2 += 0.002f;
                     var startPos = new Vector3(col1 * 0.012f + colOffset1, 0, -row1 * 0.012f - rowOffset1);
                     var endPos = new Vector3(col2 * 0.012f + colOffset2, 0, -row2 * 0.012f - rowOffset2);
-
                     var quadObj = Instantiate(linePrefab, Vector3.zero, Quaternion.identity);
                     quadObj.transform.SetParent(thermosParent, false);
                     var midPoint = (startPos + endPos) / 2f;
