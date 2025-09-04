@@ -369,5 +369,118 @@ namespace KModkit
             EdgeObjects["Lines"].Add(line);
             yield return new WaitForSeconds(0.001f);
         }
+
+        #region Twitch Plays
+        //The message to send to players showing available commands
+        #pragma warning disable 414
+        protected readonly string TwitchHelpMessage = @"!{0} W A4 F7 [Select a color and cells] | !{0} submit/reset [Press submit or reset] | Colors are blacK, White, Red, Green, Blue, Yellow, Cyan, Orange, Violet, and Pink";
+        #pragma warning restore 414
+        //Process commands sent from TP to the module
+        protected IEnumerator ProcessTwitchCommand(string command)
+        {
+            if (command.EqualsIgnoreCase("submit")) //If the command is submit, then submit
+            {
+                yield return null; //Let TP know the command is valid, and focus on the module
+                submitButton.OnInteract();
+                yield break;
+            }
+            if (command.EqualsIgnoreCase("reset")) //If the command is reset, then reset
+            {
+                yield return null;
+                resetButton.OnInteract();
+                yield break;
+            }
+            string[] parameters = command.Split(' '); //Split the command by spaces
+            for (int i = 0; i < parameters.Length; i++) //Verify each part of the command is valid
+            {
+                if (parameters[i].Length == 1 && !"kwrgbycovp".Contains(parameters[i].ToLowerInvariant())) //Check if the part is 1 character and not a valid color
+                    yield break;
+                else if (parameters[i].Length == 2) //Check if the part is 2 characters
+                {
+                    if (!"abcdefghi".Contains(parameters[i].ToLowerInvariant()[0]) || !"123456789".Contains(parameters[i][1])) //Check if the part is not a valid cell
+                        yield break;
+                    if (!Squares["123456789".IndexOf(parameters[i][1]) * 9 + "abcdefghi".IndexOf(parameters[i].ToLowerInvariant()[0])].GetComponent<KMSelectable>().enabled) //Ensure the cell is selectable
+                    {
+                        yield return "sendtochaterror The specified cell '" + parameters[i] + "' cannot be selected!";
+                        yield break;
+                    }
+                }
+                else if (parameters[i].Length > 2) //Check if the part is more than 2 characters
+                    yield break;
+            }
+            yield return null;
+            for (int i = 0; i < parameters.Length; i++) //Select all colors and cells that were specified
+            {
+                if (parameters[i].Length == 1)
+                {
+                    switch (parameters[i].ToLowerInvariant()) //Get the color button for the specified color
+                    {
+                        case "k":
+                            _palette[SquareColours.IndexOf(Colors.Black)].GetComponent<KMSelectable>().OnInteract();
+                            break;
+                        case "w":
+                            _palette[SquareColours.IndexOf(Colors.White)].GetComponent<KMSelectable>().OnInteract();
+                            break;
+                        case "r":
+                            _palette[SquareColours.IndexOf(Colors.Red)].GetComponent<KMSelectable>().OnInteract();
+                            break;
+                        case "g":
+                            _palette[SquareColours.IndexOf(Colors.Green)].GetComponent<KMSelectable>().OnInteract();
+                            break;
+                        case "b":
+                            _palette[SquareColours.IndexOf(Colors.Blue)].GetComponent<KMSelectable>().OnInteract();
+                            break;
+                        case "y":
+                            _palette[SquareColours.IndexOf(Colors.Yellow)].GetComponent<KMSelectable>().OnInteract();
+                            break;
+                        case "c":
+                            _palette[SquareColours.IndexOf(Colors.Cyan)].GetComponent<KMSelectable>().OnInteract();
+                            break;
+                        case "o":
+                            _palette[SquareColours.IndexOf(Colors.Orange)].GetComponent<KMSelectable>().OnInteract();
+                            break;
+                        case "v":
+                            _palette[SquareColours.IndexOf(Colors.Purple)].GetComponent<KMSelectable>().OnInteract();
+                            break;
+                        default:
+                            _palette[SquareColours.IndexOf(Colors.Pink)].GetComponent<KMSelectable>().OnInteract();
+                            break;
+                    }
+                }
+                else
+                    Squares["123456789".IndexOf(parameters[i][1]) * 9 + "abcdefghi".IndexOf(parameters[i].ToLowerInvariant()[0])].GetComponent<KMSelectable>().OnInteract();
+                yield return new WaitForSeconds(0.1f); //Add a sliver of delay between selections, 0.1 seconds is the default for TP
+            }
+        }
+
+        //Make the module solve itself if it is forcefully solved by TP
+        protected IEnumerator TwitchHandleForcedSolve()
+        {
+            while (_isResetting) yield return true; //Let other modules in solve queue go while the module is resetting
+            List<int> order = new List<int>() { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+            if (SelectedPaletteColour != 0) //If a color is already selected, then make sure it is checked over first
+            {
+                order.Remove(SelectedPaletteColour);
+                order.Insert(0, SelectedPaletteColour);
+            }
+            for (int i = 0; i < 9; i++) //Loop through every cell for each color
+            {
+                for (int j = 0; j < 81; j++)
+                {
+                    if (SudokuData.solution[j] == order[i] && SquareIndices[j] != order[i]) //If the current cell needs to be the current color and it isn't, then set it
+                    {
+                        if (SelectedPaletteColour != order[i]) //Select the current color if it is not already selected
+                        {
+                            _palette[order[i]].GetComponent<KMSelectable>().OnInteract();
+                            yield return new WaitForSeconds(0.1f);
+                        }
+                        Squares[j].GetComponent<KMSelectable>().OnInteract();
+                        yield return new WaitForSeconds(0.1f);
+                    }
+                }
+            }
+            submitButton.OnInteract(); //Finally, press submit
+        }
+        #endregion
     }
 }

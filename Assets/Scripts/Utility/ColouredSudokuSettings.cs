@@ -1,4 +1,4 @@
-﻿namespace KModkit 
+namespace KModkit 
 {
     public class ColouredSudokuSettings
     {
