@@ -1025,6 +1025,7 @@ MonoBehaviour:
   paletteParent: {fileID: 4632827979388818}
   colorMaterialBase: {fileID: 2100000, guid: c35ac0d1c2407f044826e7983a91a00b, type: 2}
   sudokuColorName: Black
+  sudokuTypeName: Thermo
   bulbPrefab: {fileID: 1042318441125746, guid: 92216006f50466b44bc9cd5acdce5d40, type: 2}
   linePrefab: {fileID: 1923206884330974, guid: 7e6a1c6ad5179354abee0cca3488002a, type: 2}
   thermosParent: {fileID: 4098497104639412}

@@ -156,6 +156,11 @@ Prefab:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 114478660663838060, guid: 9fabdfe08f6dda04695db933e1d02a44,
+        type: 2}
+      propertyPath: sudokuTypeName
+      value: AntiKnight
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 9fabdfe08f6dda04695db933e1d02a44, type: 2}
   m_IsPrefabParent: 0
@@ -197,6 +202,10 @@ Prefab:
     - target: {fileID: 4978276943200040, guid: 91b67f1c3066b6243b98b5a0f6b73b1f, type: 2}
       propertyPath: m_RootOrder
       value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1164042283904250, guid: 91b67f1c3066b6243b98b5a0f6b73b1f, type: 2}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 91b67f1c3066b6243b98b5a0f6b73b1f, type: 2}
@@ -383,8 +392,55 @@ Prefab:
       propertyPath: m_LocalScale.x
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 114432760385017216, guid: b972dffcba8e9cc4b9ec1c537cd97ea6,
+        type: 2}
+      propertyPath: sudokuTypeName
+      value: Thermo
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: b972dffcba8e9cc4b9ec1c537cd97ea6, type: 2}
+  m_IsPrefabParent: 0
+--- !u!1001 &1098879016
+Prefab:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 4977854663290798, guid: d3ad047b9b4aabc4590c2222f8885c36, type: 2}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4977854663290798, guid: d3ad047b9b4aabc4590c2222f8885c36, type: 2}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4977854663290798, guid: d3ad047b9b4aabc4590c2222f8885c36, type: 2}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4977854663290798, guid: d3ad047b9b4aabc4590c2222f8885c36, type: 2}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4977854663290798, guid: d3ad047b9b4aabc4590c2222f8885c36, type: 2}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4977854663290798, guid: d3ad047b9b4aabc4590c2222f8885c36, type: 2}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4977854663290798, guid: d3ad047b9b4aabc4590c2222f8885c36, type: 2}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4977854663290798, guid: d3ad047b9b4aabc4590c2222f8885c36, type: 2}
+      propertyPath: m_RootOrder
+      value: 13
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_ParentPrefab: {fileID: 100100000, guid: d3ad047b9b4aabc4590c2222f8885c36, type: 2}
   m_IsPrefabParent: 0
 --- !u!1001 &1130334940
 Prefab:
@@ -424,6 +480,10 @@ Prefab:
     - target: {fileID: 4437044994359520, guid: 04a743f1adf63524ca78da4be1614d5a, type: 2}
       propertyPath: m_RootOrder
       value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 1558107261514212, guid: 04a743f1adf63524ca78da4be1614d5a, type: 2}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 04a743f1adf63524ca78da4be1614d5a, type: 2}
@@ -676,6 +736,15 @@ Prefab:
       value: 11
       objectReference: {fileID: 0}
     - target: {fileID: 1981584296896424, guid: e0cc79f27b641594a8082a83dc82de5c, type: 2}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114665693369433466, guid: e0cc79f27b641594a8082a83dc82de5c,
+        type: 2}
+      propertyPath: sudokuTypeName
+      value: Skyscraper
+      objectReference: {fileID: 0}
+    - target: {fileID: 1816825607620224, guid: e0cc79f27b641594a8082a83dc82de5c, type: 2}
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using UnityEngine;
+using Random = System.Random;
 
 namespace KModkit
 {
@@ -23,11 +24,13 @@ namespace KModkit
         public Transform paletteParent;
         public Material colorMaterialBase;
         public string sudokuColorName;
+        public string sudokuTypeName;
         [NonSerialized] public int moduleId;
         private static int _moduleIdCounter = 1;
         private bool _isSolved;
         protected List<Color> SquareColours;
         protected ColouredSudokuSettings settings;
+        private Random random = new Random();
 
         protected T SudokuData;
         protected readonly List<GameObject> Squares = new List<GameObject>();
@@ -55,12 +58,10 @@ namespace KModkit
             InitializeMaterials();
             var indexedPuzzles = JsonConvert.DeserializeObject<List<T>>(sudokuJson.text)
                 .Select((puzzle, index) => new { Puzzle = puzzle, Index = index })
-                .OrderBy(_ => UnityEngine.Random.value)
+                .OrderBy(_ => random.Next())
                 .ToList();
             var selected = indexedPuzzles.First();
             SudokuData = selected.Puzzle;
-            if (sudokuColorName == "Black")
-                SudokuData = JsonConvert.DeserializeObject<List<T>>(sudokuJson.text)[97];
             var originalIndex = selected.Index;
             $"{sudokuColorName} Sudoku Puzzle #{originalIndex}".Log(this);
             
@@ -91,6 +92,11 @@ namespace KModkit
                 if (IsValid())
                 {
                     Module.HandlePass();
+                    
+                    SudokuCipher[] ciphers = FindObjectsOfType<SudokuCipher>();
+                    foreach (var cipher in ciphers)
+                        cipher.Enqueue(sudokuTypeName, SudokuData);
+
                     _isSolved = true;
                 }
                 else
@@ -269,7 +275,7 @@ namespace KModkit
                     var square = Instantiate(squarePrefab, Vector3.zero, Quaternion.identity);
                     square.transform.SetParent(topLeft, false);
                     square.transform.localPosition = new Vector3(offset.x, 0, offset.z);
-                    var value = SudokuData.grid[index];
+                    var value = SudokuData.solution[index];
                     SquareIndices[index] = value;
                     square.GetComponent<MeshRenderer>().material.color = SquareColours[value];
                     if ((colorblindMode.ColorblindModeActive || settings.babyMode) && value != 0)

@@ -14,7 +14,7 @@ namespace KModkit
         private static List<Color> _thermoColors = new List<Color> { Colors.ThermoRed, Colors.ThermoBlue };
         
         protected override void GenerateObjectsEarly() { GenerateThermos(); }
-
+        
         private void GenerateThermos()
         {
             if (!EarlyObjects.ContainsKey("Thermos"))

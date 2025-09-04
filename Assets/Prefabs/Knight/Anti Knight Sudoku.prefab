@@ -915,6 +915,7 @@ MonoBehaviour:
   paletteParent: {fileID: 4535552195162468}
   colorMaterialBase: {fileID: 2100000, guid: c35ac0d1c2407f044826e7983a91a00b, type: 2}
   sudokuColorName: Cyan
+  sudokuTypeName: AntiKnight
 --- !u!114 &114488764157764434
 MonoBehaviour:
   m_ObjectHideFlags: 1

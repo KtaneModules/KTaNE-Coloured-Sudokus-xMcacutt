@@ -9,6 +9,11 @@ namespace KModkit
         public List<int> solution { get; set; } = new List<int>();
     }
 
+    public class RegularSudokuData : ISudokuData
+    {
+        
+    }
+
     public class SandwichSudokuData : ISudokuData
     {
         public List<int> row_sums { get; set; } = new List<int>();

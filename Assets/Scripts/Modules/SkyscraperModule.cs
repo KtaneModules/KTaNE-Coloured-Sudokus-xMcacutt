@@ -72,7 +72,7 @@ namespace KModkit
                     var index = row * 9 + col;
                     var square = Instantiate(squarePrefab, Vector3.zero, Quaternion.identity);
                     square.transform.SetParent(topLeft, false); 
-                    var value = SudokuData.grid[index];
+                    var value = SudokuData.solution[index];
                     var height = value == 0 ? 0.001f : value * 0.004f;
                     square.transform.localScale = new Vector3(1f, height * 1000, 1f);
                     square.transform.localPosition = new Vector3(offset.x, height / 4f, offset.z);
