@@ -28,6 +28,20 @@ namespace KModkit.Ciphers
                     return new AntiKnightCipher(sudokuData as AntiKnightSudokuData);
                 case "Thermo":
                     return new ThermoCipher(sudokuData as ThermoSudokuData);
+                case "Jigsaw":
+                    return new JigsawCipher(sudokuData as JigsawSudokuData);
+                case "Little Killer":
+                    return new LittleKillerCipher(sudokuData as LittleKillerSudokuData);
+                case "Killer":
+                    return new KillerCipher(sudokuData as KillerSudokuData);
+                case "Even Odd":
+                    return new EvenOddCipher(sudokuData as EvenOddSudokuData);
+                case "Palindrome":
+                    return new PalindromeCipher(sudokuData as PalindromeSudokuData);
+                case "Sandwich":
+                    return new SandwichCipher(sudokuData as SandwichSudokuData);
+                case "Kropki":
+                    return new KropkiCipher(sudokuData as KropkiSudokuData);
                 default:
                     return null;
             }

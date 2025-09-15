@@ -17,5 +17,7 @@ namespace Utility
                 builder.Append(c);
             return builder.ToString();
         }
+        
+        public static int Mod9(this int x) => ((x % 9) + 9) % 9;
     }
 }

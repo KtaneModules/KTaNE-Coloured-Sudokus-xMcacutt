@@ -15,16 +15,20 @@ namespace KModkit.Ciphers
         private float hue = 0f;
         private readonly TextAsset regularSudokuData;
 
-        public RegularCipher(TextAsset regularSudokuData) { this.regularSudokuData = regularSudokuData; }
-
-        public string Name => "Regular";
-
+        public RegularCipher(TextAsset regularSudokuData)
+        {
+            this.regularSudokuData = regularSudokuData;
+            Name = "Regular";
+        }
+        
         public override IEnumerator GeneratePuzzle(Action<CipherResult> onComplete)
         {
             List<string> keyWords;
             string letterShifts;
             var letterGrid = GenerateLetterGrid(out keyWords, out letterShifts);
 
+            var debugLogs = new List<string>();
+            
             var indexedRegularPuzzles = JsonConvert.DeserializeObject<List<RegularSudokuData>>(regularSudokuData.text)
                 .Select((puzzle, index) => new { Puzzle = puzzle, Index = index })
                 .OrderBy(_ => UnityEngine.Random.value)
@@ -35,6 +39,9 @@ namespace KModkit.Ciphers
                 .GroupBy(x => x.row)
                 .Select(g => g.Select(x => x.value).ToArray())
                 .ToArray();
+            debugLogs.Add("Sudoku grid: " + string.Join("", sudokuGrid.SelectMany(x => x.Select(n => n.ToString()).ToArray()).ToArray()));
+            debugLogs.Add("Letter grid: " + string.Join("", letterGrid.SelectMany(x => x.Select(n => n.ToString()).ToArray()).ToArray()));
+            
             var sudokuGridUnsolved = currentPuzzle.grid.Select((value, index) => new { value, row = index / 9 })
                 .GroupBy(x => x.row)
                 .Select(g => g.Select(x => x.value).ToArray())
@@ -97,13 +104,12 @@ namespace KModkit.Ciphers
                 .Select(i => cluesString.Substring(i * 9, 9))
                 .ToList();
             screenTexts.AddRange(chunks);
-			// Debug.Log(new string(letterGrid.SelectMany(row => row).ToArray()));
-			// Debug.Log(string.Join("", sudokuGrid.SelectMany(row => row).Select(n => n.ToString()).ToArray()));
             var result = new CipherResult()
             {
                 EncryptedWord = encryptedWord,
                 UnencryptedWord = unencryptedWord,
                 ScreenTexts = screenTexts,
+                DebugLogs =  debugLogs
             };
             onComplete(result);
             yield break;

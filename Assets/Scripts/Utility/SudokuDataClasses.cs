@@ -42,6 +42,9 @@ namespace KModkit
     
     public class EvenOddSudokuData : ISudokuData
     {
+        public List<string> words { get; set; } = new List<string>();
+        public List<int> lengths { get; set; } = new List<int>();
+        public List<int> start_indices { get; set; } = new List<int>();
     }
 
     public class SkyscraperSudokuData : ISudokuData

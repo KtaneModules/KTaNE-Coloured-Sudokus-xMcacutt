@@ -8,18 +8,10 @@ using Utility;
 using Words;
 using Random = System.Random;
 
-public class CellRef
-{
-    public int Row;
-    public int Col;
-    public CellRef(int row, int col) { Row = row; Col = col; }
-}
-
 namespace KModkit.Ciphers
 {
     public class SkyscraperCipher : Cipher
     {
-        private float hue = 0f;
         private int[][] sudokuGrid;
 
         public SkyscraperCipher(SkyscraperSudokuData sudokuData)
@@ -29,9 +21,8 @@ namespace KModkit.Ciphers
                 .Select(g => g.Select(x => x.value).ToArray())
                 .ToArray();
             sudokuGrid = expandedGrid;
+            Name = "Skyscraper";
         }
-
-        public string Name => "Regular";
 
         public override IEnumerator GeneratePuzzle(Action<CipherResult> onComplete)
         {
@@ -48,6 +39,7 @@ namespace KModkit.Ciphers
                 var encryptionData = "";
                 var puzzleValid = true;
 
+                List<string> debugLogs = new List<string>();
                 foreach (var letter in unencryptedWord)
                 {
                     var success = false;
@@ -64,9 +56,11 @@ namespace KModkit.Ciphers
                     }
 
                     var cellRef = candidates.PickRandom();
+                    debugLogs.Add($"Chosen cell for letter {letter} is {cellRef}");
                     var targetHeight = sudokuGrid[cellRef.Row][cellRef.Col];
 
                     var direction = random.Next(4);
+                    debugLogs.Add($"Chosen direction {direction} finding cell with this cell as next highest");
                     for (var dirAttempt = 0; dirAttempt < 4 && !success; dirAttempt++)
                     {
                         var dir = (direction + dirAttempt) % 4;
@@ -94,13 +88,17 @@ namespace KModkit.Ciphers
                 screenTexts.Add(letterShifts);
                 screenTexts.AddRange(keyWords);
                 var encryptedWord = new string(encryptedLetters.ToArray());
-                Debug.Log(new string(letterGrid.SelectMany(row => row).ToArray()));
-                Debug.Log(string.Join("", sudokuGrid.SelectMany(row => row).Select(n => n.ToString()).ToArray()));
+                
+                debugLogs.Add($"Keywords: {string.Join("", keyWords.ToArray())}");
+                debugLogs.Add("Letter shifts: " + letterShifts);
+                debugLogs.Add("Letter grid: " + string.Join("", letterGrid.SelectMany(x => x.Select(n => n.ToString()).ToArray()).ToArray()));
+                
                 var result = new CipherResult()
                 {
                     EncryptedWord = encryptedWord,
                     UnencryptedWord = unencryptedWord,
                     ScreenTexts = screenTexts,
+                    DebugLogs = debugLogs
                 };
                 onComplete(result);
                 yield break;
@@ -111,10 +109,9 @@ namespace KModkit.Ciphers
             {
                 EncryptedWord = null,
                 UnencryptedWord = null,
-                ScreenTexts = new List<string>() {"ERROR"},
+                ScreenTexts = new List<string>() {"Error"},
             };
             onComplete(resultFail);
-            yield break;
         }
 
         private CellRef FindFurthestValidCell(CellRef start, int direction, int targetHeight, int[][] solvedGrid, char[][] letterGrid)
@@ -125,29 +122,25 @@ namespace KModkit.Ciphers
             else if (direction == 2) dr = 1;
             else if (direction == 3) dc = -1;
 
-            int rows = solvedGrid.Length;
-            int cols = solvedGrid[0].Length;
-            int r = start.Row;
-            int c = start.Col;
-            int maxBetween = 0;
+            var rows = solvedGrid.Length;
+            var cols = solvedGrid[0].Length;
+            var r = start.Row;
+            var c = start.Col;
+            var maxBetween = 0;
             CellRef lastValid = null;
 
-            for (int steps = 1; steps < rows * cols; steps++)
+            for (var steps = 1; steps < rows * cols; steps++)
             {
                 r = (r + dr + rows) % rows;
                 c = (c + dc + cols) % cols;
-                int value = solvedGrid[r][c];
+                var value = solvedGrid[r][c];
                 if (letterGrid[r][c] == '#') return null;
                 if (value >= targetHeight)
-                {
-                    if (steps == 1) return null;
-                    return lastValid;
-                }
-                if (value > maxBetween && value < targetHeight)
-                {
-                    maxBetween = value;
-                    lastValid = new CellRef(r, c);
-                }
+                    return steps == 1 ? null : lastValid;
+                if (value <= maxBetween || value >= targetHeight) 
+                    continue;
+                maxBetween = value;
+                lastValid = new CellRef(r, c);
             }
 
             return lastValid;

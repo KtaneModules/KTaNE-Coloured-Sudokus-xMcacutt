@@ -1051,6 +1051,7 @@ MonoBehaviour:
   paletteParent: {fileID: 4812624850564958}
   colorMaterialBase: {fileID: 2100000, guid: c35ac0d1c2407f044826e7983a91a00b, type: 2}
   sudokuColorName: Orange
+  sudokuTypeName: Palindrome
   linePrefab: {fileID: 1923206884330974, guid: 7e6a1c6ad5179354abee0cca3488002a, type: 2}
   linesParent: {fileID: 4362385460961678}
 --- !u!114 &114826203604426440

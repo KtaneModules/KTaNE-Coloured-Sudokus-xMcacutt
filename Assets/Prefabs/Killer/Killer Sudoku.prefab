@@ -1068,6 +1068,7 @@ MonoBehaviour:
   paletteParent: {fileID: 4122674962928508}
   colorMaterialBase: {fileID: 2100000, guid: c35ac0d1c2407f044826e7983a91a00b, type: 2}
   sudokuColorName: White
+  sudokuTypeName: Killer
   clueLightPrefab: {fileID: 1375290345692208, guid: ba4f970646b1dd44d9b27a2212ff3aca,
     type: 2}
   horizontalLinePrefab: {fileID: 1715321054230362, guid: 8e01d5e12c3a07c4ab042c3468a4371c,

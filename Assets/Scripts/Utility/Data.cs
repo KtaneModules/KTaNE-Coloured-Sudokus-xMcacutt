@@ -47,11 +47,34 @@ namespace Words
             words.RemoveAt(ix);
             return word;
         }
+        
         public Data RemoveWord(string word, Data data)
         {
             data._allWords[word.Length - MinLength].Remove(word);
             return data;
         }
+
+        /// <summary>
+        /// Returns a snapshot list of words whose lengths are between minLength and maxLength (inclusive).
+        /// This does not remove them from the internal pool.
+        /// </summary>
+        public List<string> GetAllWords(int minLength, int maxLength)
+        {
+            if (minLength > MaxLength)
+                throw new ArgumentOutOfRangeException(nameof(minLength), $"minLength must not be greater than {MaxLength}.");
+            if (maxLength < MinLength)
+                throw new ArgumentOutOfRangeException(nameof(maxLength), $"maxLength must not be smaller than {MinLength}.");
+            if (maxLength < minLength)
+                throw new ArgumentOutOfRangeException(nameof(maxLength), "maxLength must be greater than or equal to minLength.");
+
+            var result = new List<string>();
+            for (int len = minLength; len <= maxLength; len++)
+            {
+                result.AddRange(_allWords[len - MinLength]);
+            }
+            return result;
+        }
+        
         /// <summary>
         /// Calculates a score for every word, finds the words with the highest score, and then picks (and removes) a random one of those.
         /// </summary>
@@ -97,7 +120,29 @@ namespace Words
             _allWords[kw.Length - MinLength].Remove(kw);
             return kw;
         }
+        
+        public bool AnyWordMatches(int length, Func<string, bool> scorer)
+        {
+            return AnyWordMatches(length, length, scorer);
+        }
+        
+        public bool AnyWordMatches(int minLength, int maxLength, Func<string, bool> predicate)
+        {
+            if (minLength > MaxLength)
+                throw new ArgumentOutOfRangeException(nameof(minLength), $"minLength must not be greater than {MaxLength}.");
+            if (maxLength < MinLength)
+                throw new ArgumentOutOfRangeException(nameof(maxLength), $"maxLength must not be smaller than {MinLength}.");
+            if (maxLength < minLength)
+                throw new ArgumentOutOfRangeException(nameof(maxLength), "maxLength must be greater than or equal to minLength.");
 
+            for (int length = minLength; length <= maxLength; length++)
+            {
+                if (_allWords[length - MinLength].Any(predicate))
+                    return true;
+            }
+            return false;
+        }
+        
         private readonly List<string>[] _allWords;
 
         private static readonly string[] s_allWords = new[]
@@ -135,7 +180,7 @@ namespace Words
             "BACKS", "BACON", "BADGE", "BADLY", "BAKED", "BAKER", "BALLS", "BANDS", "BANKS", "BARGE", "BARON", "BASED", "BASES", "BASIC", "BASIL", "BASIN", "BASIS", "BATCH", "BATHS", "BEACH", "BEADS", "BEAMS", "BEANS", "BEARD", "BEARS", "BEAST", "BEERS", "BEGAN", "BEGIN", "BEGUN", "BEING", "BELLS", "BELLY", "BELOW", "BELTS", "BENCH", "BERRY", "BIBLE", "BIDET", "BIKES", "BILLS", "BINGE", "BINGO", "BIOME", "BIRCH", "BIRDS", "BIRTH", "BISON", "BITER", "BLACK", "BLADE", "BLAME", "BLAND", "BLANK", "BLARE", "BLAST", "BLAZE", "BLEAK", "BLEAT", "BLEED", "BLEND", "BLESS", "BLIMP", "BLIND", "BLINK", "BLISS", "BLITZ", "BLOCK", "BLOND", "BLOOD", "BLOOM", "BLOWN", "BLOWS", "BLUES", "BLUFF", "BLUNT", "BLUSH", "BOARD", "BOATS", "BOGUS", "BOLTS", "BOMBS", "BONDS", "BONES", "BONUS", "BOOKS", "BOOST", "BOOTH", "BOOTS", "BORED", "BORON", "BOTCH", "BOUND", "BOWED", "BOWEL", "BOWLS", "BOXED", "BOXER", "BOXES", "BRACE", "BRAID", "BRAIN", "BRAKE", "BRAND", "BRASH", "BRASS", "BRAVE", "BRAWL", "BRAWN", "BREAD", "BREAK", "BREED", "BRIBE", "BRICK", "BRIDE", "BRIEF", "BRINE", "BRING", "BRINK", "BRISK", "BROAD", "BROIL", "BROKE", "BROOK", "BROOM", "BROTH", "BROWN", "BRUSH", "BRUTE", "BUCKS", "BUDDY", "BUDGE", "BUGGY", "BUILD", "BUILT", "BULBS", "BULGE", "BULKY", "BULLS", "BUMPY", "BUNCH", "BUNNY", "BURNS", "BURNT", "BURST", "BUSES", "BUYER", "BUZZY", "BYLAW", "BYWAY",
             "CABBY", "CABIN", "CABLE", "CACHE", "CAKES", "CALLS", "CALVE", "CAMPS", "CAMPY", "CANAL", "CANDY", "CANED", "CANNY", "CANOE", "CANON", "CARDS", "CARED", "CARER", "CARES", "CARGO", "CAROL", "CARRY", "CARVE", "CASED", "CASES", "CASTE", "CATCH", "CATER", "CAULK", "CAUSE", "CAVES", "CEASE", "CEDED", "CELLS", "CENTS", "CHAFE", "CHAIN", "CHAIR", "CHALK", "CHAMP", "CHANT", "CHAOS", "CHAPS", "CHARM", "CHART", "CHARY", "CHASE", "CHASM", "CHEAP", "CHEAT", "CHECK", "CHEEK", "CHEER", "CHESS", "CHEST", "CHICK", "CHIEF", "CHILD", "CHILI", "CHILL", "CHIME", "CHINA", "CHIPS", "CHOIR", "CHORD", "CHORE", "CHOSE", "CHUCK", "CHUNK", "CHUTE", "CIDER", "CIGAR", "CINCH", "CITED", "CITES", "CIVIC", "CIVIL", "CLAIM", "CLANK", "CLASH", "CLASS", "CLAWS", "CLEAN", "CLEAR", "CLEAT", "CLERK", "CLICK", "CLIFF", "CLIMB", "CLING", "CLOAK", "CLOCK", "CLONE", "CLOSE", "CLOTH", "CLOUD", "CLOUT", "CLOVE", "CLOWN", "CLUBS", "CLUCK", "CLUES", "CLUNG", "CLUNK", "COACH", "COAST", "COATS", "COCOA", "CODES", "COINS", "COLON", "COLOR", "COMES", "COMIC", "COMMA", "CONCH", "CONIC", "CORAL", "CORGI", "CORNY", "CORPS", "COSTS", "COUCH", "COUGH", "COULD", "COUNT", "COURT", "COVEN", "COVER", "CRACK", "CRAFT", "CRANE", "CRANK", "CRASH", "CRASS", "CRATE", "CRAVE", "CRAWL", "CRAZY", "CREAK", "CREAM", "CREED", "CREEK", "CREPT", "CREST", "CREWS", "CRIED", "CRIES", "CRIME", "CRISP", "CROPS", "CROSS", "CROWD", "CROWN", "CRUDE", "CRUEL", "CRUSH", "CRUST", "CRYPT", "CUBAN", "CUBBY", "CUBIC", "CUMIN", "CURLS", "CURLY", "CURRY", "CURSE", "CURVE", "CUTIE", "CYCLE", "CYNIC", "CZECH",
             "DADDY", "DAILY", "DAIRY", "DAISY", "DANCE", "DARED", "DATED", "DATES", "DATUM", "DEALS", "DEALT", "DEATH", "DEBIT", "DEBTS", "DEBUG", "DEBUT", "DECAF", "DECAL", "DECAY", "DECOR", "DECOY", "DEEDS", "DEITY", "DELAY", "DELVE", "DENIM", "DENSE", "DEPOT", "DEPTH", "DERBY", "DESKS", "DETER", "DETOX", "DEUCE", "DEVIL", "DIARY", "DICED", "DIETS", "DIGIT", "DIMLY", "DINAR", "DINER", "DINGY", "DIRTY", "DISCO", "DISCS", "DISKS", "DITCH", "DIVED", "DIVER", "DIZZY", "DOCKS", "DODGE", "DODGY", "DOGGY", "DOGMA", "DOING", "DOLLS", "DONOR", "DONUT", "DOORS", "DOSED", "DOSES", "DOUBT", "DOUGH", "DOUSE", "DOZEN", "DRAFT", "DRAIN", "DRAMA", "DRANK", "DRAWN", "DRAWS", "DREAD", "DREAM", "DRESS", "DRIED", "DRIER", "DRIFT", "DRILL", "DRINK", "DRIVE", "DRONE", "DROPS", "DROVE", "DROWN", "DRUGS", "DRUMS", "DRUNK", "DRYER", "DUCKS", "DUMMY", "DUNCE", "DUNES", "DUSTY", "DUTCH", "DWARF", "DWELL", "DYING",
-            "EAGER", "EAGLE", "EARLY", "EARTH", "EASED", "EASEL", "EATEN", "EDGES", "EDICT", "EERIE", "EIGHT", "ELBOW", "ELDER", "ELECT", "ELITE", "ELUDE", "ELVES", "EMOTE", "EMPTY", "ENACT", "ENDED", "ENEMY", "ENJOY", "ENSUE", "ENTER", "ENTRY", "EQUAL", "EQUIP", "ERASE", "ERECT", "ERROR", "ESSAY", "ETHIC", "ETUDE", "EVADE", "EVENT", "EVERY", "EVICT", "EXACT", "EXALT", "EXAMS", "EXERT", "EXILE", "EXIST", "EXTRA",
+            "EAGER", "EAGLE", "EARLY", "EARTH", "EASED", "EASEL", "EATEN", "EDGES", "EDICT", "EERIE", "EIGHT", "ELBOW", "ELDER", "ELECT", "ELITE", "ELUDE", "ELVES", "EMOTE", "EMPTY", "ENACT", "ENDED", "ENEMY", "ENJOY", "ENSUE", "ENTER", "ENTRY", "EQUAL", "EQUIP", "ERASE", "ERECT", "ESSAY", "ETHIC", "ETUDE", "EVADE", "EVENT", "EVERY", "EVICT", "EXACT", "EXALT", "EXAMS", "EXERT", "EXILE", "EXIST", "EXTRA",
             "FACED", "FACES", "FACTS", "FADED", "FAILS", "FAINT", "FAIRS", "FAIRY", "FAITH", "FALLS", "FALSE", "FAMED", "FANCY", "FARES", "FARMS", "FATAL", "FATED", "FATTY", "FAULT", "FAUNA", "FAVOR", "FEARS", "FEAST", "FEELS", "FEINT", "FELLA", "FENCE", "FERRY", "FETAL", "FETCH", "FEVER", "FEWER", "FIBER", "FIBRE", "FIELD", "FIERY", "FIFTH", "FIFTY", "FIGHT", "FILED", "FILES", "FILET", "FILLS", "FILLY", "FILMS", "FILMY", "FILTH", "FINAL", "FINDS", "FINED", "FINER", "FINES", "FIRED", "FIRES", "FIRMS", "FIRST", "FISTS", "FIXED", "FLAGS", "FLAIL", "FLAIR", "FLAME", "FLANK", "FLARE", "FLASH", "FLASK", "FLATS", "FLAWS", "FLEET", "FLESH", "FLIES", "FLING", "FLIRT", "FLOAT", "FLOCK", "FLOOD", "FLOOR", "FLORA", "FLOUR", "FLOWN", "FLOWS", "FLUID", "FLUNG", "FLUNK", "FLUSH", "FLUTE", "FOCAL", "FOCUS", "FOGGY", "FOLDS", "FOLIO", "FOLKS", "FOLLY", "FONTS", "FOODS", "FOOLS", "FORCE", "FORGE", "FORMS", "FORTE", "FORTH", "FORTY", "FORUM", "FOUND", "FOURS", "FOXES", "FOYER", "FRAIL", "FRAME", "FRANK", "FRAUD", "FREAK", "FREED", "FRESH", "FRIED", "FRISK", "FROGS", "FRONT", "FROST", "FROWN", "FROZE", "FRUIT", "FUDGE", "FUELS", "FULLY", "FUMES", "FUNDS", "FUNNY", "FUSED", "FUTON", "FUZZY",
             "GAINS", "GAMES", "GANGS", "GASES", "GATES", "GAUGE", "GAZED", "GEESE", "GENES", "GENIE", "GENRE", "GENUS", "GHOST", "GHOUL", "GIANT", "GIDDY", "GIFTS", "GIMPY", "GIRLS", "GIRLY", "GIRTH", "GIVEN", "GIVES", "GIZMO", "GLAND", "GLARE", "GLASS", "GLEAM", "GLIDE", "GLINT", "GLOBE", "GLOOM", "GLORY", "GLOSS", "GLOVE", "GLUED", "GOALS", "GOATS", "GOING", "GOLLY", "GOODS", "GOOFY", "GOOPY", "GOOSE", "GORGE", "GRACE", "GRADE", "GRAFT", "GRAIN", "GRAMS", "GRAND", "GRANT", "GRAPE", "GRAPH", "GRASP", "GRASS", "GRATE", "GRAVE", "GRAVY", "GREAT", "GREED", "GREEK", "GREEN", "GREET", "GRIEF", "GRILL", "GRIME", "GRIMY", "GRIND", "GRIPS", "GROIN", "GROOM", "GROSS", "GROUP", "GROUT", "GROWN", "GROWS", "GRUEL", "GRUMP", "GRUNT", "GUARD", "GUAVA", "GUESS", "GUEST", "GUIDE", "GUILD", "GUILT", "GULLS", "GUMMY", "GUNKY", "GUSTY", "GUTSY",
             "HABIT", "HAIKU", "HAIRS", "HAIRY", "HALAL", "HALLS", "HALVE", "HANDS", "HANDY", "HANGS", "HAPPY", "HARDY", "HAREM", "HARPY", "HARSH", "HASTE", "HASTY", "HATCH", "HATED", "HATES", "HAUNT", "HAVEN", "HAVOC", "HAZEL", "HEADS", "HEARD", "HEARS", "HEART", "HEAVE", "HEAVY", "HEDGE", "HEELS", "HEFTY", "HEIRS", "HEIST", "HELIX", "HELLO", "HELPS", "HENCE", "HERBS", "HERDS", "HILLS", "HILLY", "HINDU", "HINGE", "HINTS", "HIPPO", "HIRED", "HITCH", "HOBBY", "HOIST", "HOLDS", "HOLES", "HOLLY", "HOMED", "HOMES", "HONEY", "HONOR", "HOOKS", "HOPED", "HOPES", "HORNS", "HORSE", "HOSTS", "HOTEL", "HOUND", "HOURS", "HOUSE", "HUMAN", "HUMID", "HUMOR", "HUMUS", "HURRY", "HURTS", "HUSKY", "HYENA", "HYMNS",

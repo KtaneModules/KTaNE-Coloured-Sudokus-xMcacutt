@@ -1033,7 +1033,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 57d3cdba03e14369899a8174fb738437, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sudokuJson: {fileID: 4900000, guid: f1e6d38634c544608995809ff362d6f4, type: 3}
+  sudokuJson: {fileID: 4900000, guid: e964af38d7f1b9e4eb4e94317b0f5ac5, type: 3}
   topLeft: {fileID: 4998717361061318}
   submitButton: {fileID: 114150858042366508}
   resetButton: {fileID: 114940444558822518}
@@ -1044,6 +1044,7 @@ MonoBehaviour:
   paletteParent: {fileID: 4395571987399312}
   colorMaterialBase: {fileID: 2100000, guid: c35ac0d1c2407f044826e7983a91a00b, type: 2}
   sudokuColorName: Red
+  sudokuTypeName: Sandwich
   columnCluesParent: {fileID: 4429982433174352}
   rowCluesParent: {fileID: 4315511029560500}
   clueLightPrefab: {fileID: 1837890815139110, guid: bb3b4feeb367fee4fbddea183a478fef,

@@ -877,7 +877,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0b9e4eea5a8b45f980f2540ea2f5bfc4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sudokuJson: {fileID: 4900000, guid: 57f4f02f692a07a4fafda1230d8a51da, type: 3}
+  sudokuJson: {fileID: 4900000, guid: 313faf84c469426aa70e36fd404d223c, type: 3}
   topLeft: {fileID: 4530212060318124}
   submitButton: {fileID: 114374005285214926}
   resetButton: {fileID: 114820570382578042}
@@ -888,6 +888,7 @@ MonoBehaviour:
   paletteParent: {fileID: 4237047323889132}
   colorMaterialBase: {fileID: 2100000, guid: c35ac0d1c2407f044826e7983a91a00b, type: 2}
   sudokuColorName: Pink
+  sudokuTypeName: Even Odd
   circlePrefab: {fileID: 1765827115175388, guid: 3b8b81e610bd89d4ab9446d1e4c880e3,
     type: 2}
 --- !u!114 &114135250553938558

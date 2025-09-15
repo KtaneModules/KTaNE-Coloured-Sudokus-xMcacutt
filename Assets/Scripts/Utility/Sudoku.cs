@@ -275,7 +275,7 @@ namespace KModkit
                     var square = Instantiate(squarePrefab, Vector3.zero, Quaternion.identity);
                     square.transform.SetParent(topLeft, false);
                     square.transform.localPosition = new Vector3(offset.x, 0, offset.z);
-                    var value = SudokuData.solution[index];
+                    var value = SudokuData.grid[index];
                     SquareIndices[index] = value;
                     square.GetComponent<MeshRenderer>().material.color = SquareColours[value];
                     if ((colorblindMode.ColorblindModeActive || settings.babyMode) && value != 0)

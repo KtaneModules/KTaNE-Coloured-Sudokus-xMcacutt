@@ -36,7 +36,6 @@ public class SudokuCipher : Module
     public TextAsset regularSudokuData;
     private Queue<SudokuData> queuedSudokuTypes = new Queue<SudokuData>();
     private string currentUnencryptedWord;
-    private string currentEncryptedWord;
     private Cipher currentCipher;
     private List<string> screenTexts = new List<string>();
     private List<string> backupScreenTexts = new List<string>();
@@ -46,15 +45,17 @@ public class SudokuCipher : Module
     private bool moduleSolved;
     private bool inSubmissionMode;
     private bool isGenerating;
-
+    private bool isMazeMode;
+    private int stage = 1;
+    
     public static string[] supportedModuleIds = new string[]
     {
-        "blackSudoku", 
-        "purpleSudoku", 
-        "blueSudoku", 
-        "cyanSudoku", 
-        "greenSudoku", 
-        "yellowSudoku", 
+        "blackSudoku",
+        "purpleSudoku",
+        "blueSudoku",
+        "cyanSudoku",
+        "greenSudoku",
+        "yellowSudoku",
         "whiteSudoku",
         "redSudoku",
         "pinkSudoku"
@@ -69,7 +70,7 @@ public class SudokuCipher : Module
             audio.PlaySoundAtTransform("ArrowPress.ogg", nextButton.transform);
             var maxPage = Mathf.CeilToInt(screenTexts.Count / 3f);
             currentPage++;
-            if (currentPage > maxPage) 
+            if (currentPage > maxPage)
                 currentPage = 1;
             return false;
         };
@@ -80,19 +81,28 @@ public class SudokuCipher : Module
             audio.PlaySoundAtTransform("ArrowPress.ogg", previousButton.transform);
             var maxPage = Mathf.CeilToInt(screenTexts.Count / 3f);
             currentPage--;
-            if (currentPage < 1) 
+            if (currentPage < 1)
                 currentPage = maxPage;
             return false;
         };
-        submitButton.OnInteract += delegate () { SubmitWord(submitButton); return false; };
+        submitButton.OnInteract += delegate()
+        {
+            SubmitWord(submitButton);
+            return false;
+        };
         module.GetComponent<KMSelectable>().OnFocus += delegate { moduleSelected = true; };
         module.GetComponent<KMSelectable>().OnDefocus += delegate { moduleSelected = false; };
         foreach (var keyButton in keyboard)
         {
             var pressedButton = keyButton;
-            pressedButton.OnInteract += delegate () { LetterPress(pressedButton); return false; };
+            pressedButton.OnInteract += delegate()
+            {
+                LetterPress(pressedButton);
+                return false;
+            };
         }
-        currentCipher = CipherFactory.CreateCipher("Regular", regularSudokuData); 
+
+        currentCipher = CipherFactory.CreateCipher("Regular", regularSudokuData);
         PopulateScreens();
     }
 
@@ -100,18 +110,26 @@ public class SudokuCipher : Module
     {
         if (currentCipher == null)
             return;
-        
+
         isGenerating = true;
         screenTexts = new List<string> { "...", "...", "..." };
         currentPage = 1;
+        mazeLives = 0;
+        currentMazeLives = 0;
+
+        Debug.LogFormat("[Sudoku Cipher #{0}] {1}", moduleId, $"New Cipher (Stage {stage}) Generated - {currentCipher.Name}");
+        
         
         StartCoroutine(currentCipher.GeneratePuzzle(result =>
         {
-            currentEncryptedWord = result.EncryptedWord;
             currentUnencryptedWord = result.UnencryptedWord;
+            mazeLives = result.MazeLives;
+            currentMazeLives = mazeLives;
             screenTexts = result.ScreenTexts;
-            isGenerating = false; 
-            Debug.Log(currentUnencryptedWord);
+            isGenerating = false;
+            foreach (var line in result.DebugLogs)
+                Debug.LogFormat("[Sudoku Cipher #{0}] {1}", moduleId, line);
+            Debug.LogFormat("[Sudoku Cipher #{0}] {1}", moduleId, $"Stage {stage} Word: {currentUnencryptedWord}");
         }));
     }
 
@@ -140,22 +158,60 @@ public class SudokuCipher : Module
         foreach (var m in solvedModules)
             modules.Remove(m);
         if (modules.Count == 0 && queuedSudokuTypes.Count == 0 && currentCipher == null)
+        {
+            Debug.LogFormat("[Sudoku Cipher #{0}] {1}", moduleId, "Module Solved - No Remaining Sudokus");
             module.HandlePass();
-        
+        }
+
         if (!moduleSelected) return;
         for (var ltr = 0; ltr < 26; ltr++)
             if (Input.GetKeyDown(((char)('a' + ltr)).ToString()))
-               keyboard[GetPositionFromChar((char)('A' + ltr))].OnInteract();
+                keyboard[GetPositionFromChar((char)('A' + ltr))].OnInteract();
         if (Input.GetKeyDown(KeyCode.Return))
             submitButton.OnInteract();
     }
-    
+
     protected virtual void SubmitWord(KMSelectable button)
     {
         if (moduleSolved || currentCipher == null || isGenerating)
             return;
 
         button.AddInteractionPunch();
+
+        if ((inSubmissionMode && userInput.Equals(currentUnencryptedWord, StringComparison.OrdinalIgnoreCase)) 
+            || (screenTexts.Count > 0 && screenTexts[0] == "Error"))
+        {
+            if (screenTexts.Count > 0 && screenTexts[0] == "Error")
+                Debug.LogFormat("[Sudoku Cipher #{0}] {1}", moduleId, $"An error occurred for stage {{stage}} - {currentCipher.Name}, Stage Passed.");
+            else
+                Debug.LogFormat("[Sudoku Cipher #{0}] {1}", moduleId, $"Submitted {userInput}");
+            audio.PlaySoundAtTransform("SolveSFX", transform);
+            userInput = "";
+            screenTexts.Clear();
+            currentCipher = null;
+            inSubmissionMode = false;
+            var modules = bomb.GetModuleIDs().Where(x => supportedModuleIds.Contains(x)).ToList();
+            var solvedModules = bomb.GetSolvedModuleIDs().Where(x => supportedModuleIds.Contains(x)).ToList();
+            foreach (var m in solvedModules)
+                modules.Remove(m);
+
+            if (queuedSudokuTypes.Count > 0 && !isGenerating)
+            {
+                var sudoku = queuedSudokuTypes.Dequeue();
+                currentCipher = CipherFactory.CreateCipher(sudoku.type, sudoku.sudokuData);
+                PopulateScreens();
+                inSubmissionMode = false;
+            }
+            else if (modules.Count == 0 && !isGenerating)
+            {
+                Debug.LogFormat("[Sudoku Cipher #{0}] {1}", moduleId, $"Module Solved - No Remaining Sudokus");
+                module.HandlePass();
+                moduleSolved = true;
+                inSubmissionMode = false;
+            }
+            return;
+        }
+        
         if (!inSubmissionMode)
         {
             inSubmissionMode = true;
@@ -165,81 +221,116 @@ public class SudokuCipher : Module
         }
         else
         {
-            if (userInput.Equals(currentUnencryptedWord, StringComparison.OrdinalIgnoreCase))
-            {
-                audio.PlaySoundAtTransform("SolveSFX", transform);
-                userInput = "";
-                screenTexts.Clear();
-                currentCipher = null;
-                inSubmissionMode = false;
-                var modules = bomb.GetModuleIDs().Where(x => supportedModuleIds.Contains(x)).ToList();
-                var solvedModules = bomb.GetSolvedModuleIDs().Where(x => supportedModuleIds.Contains(x)).ToList();
-                foreach (var m in solvedModules)
-                    modules.Remove(m);
-
-                if (queuedSudokuTypes.Count > 0 && !isGenerating)
-                {
-                    var sudoku = queuedSudokuTypes.Dequeue();
-                    currentCipher = CipherFactory.CreateCipher(sudoku.type, sudoku.sudokuData);
-                    PopulateScreens();
-                    inSubmissionMode = false;
-                }
-                else if (modules.Count == 0 && !isGenerating)
-                {
-                    module.HandlePass();
-                    moduleSolved = true;
-                    inSubmissionMode = false;
-                }
-            }
-            else
-            {
-                audio.PlaySoundAtTransform("StrikeSFX", transform);
-                module.HandleStrike();
-                screenTexts = new List<string>(backupScreenTexts);
-                userInput = "";
-                inSubmissionMode = false;
-                currentPage = 1;
-            }
+            Debug.LogFormat("[Sudoku Cipher #{0}] {1}", moduleId, $"Submitted {userInput}... Strike!");
+            audio.PlaySoundAtTransform("StrikeSFX", transform);
+            module.HandleStrike();
+            ResetToInitialState();
         }
     }
-    
+
     private int GetPositionFromChar(char c)
     {
-       return "QWERTYUIOPASDFGHJKLZXCVBNM".IndexOf(c);
+        return "QWERTYUIOPASDFGHJKLZXCVBNM".IndexOf(c);
     }
 
     private void LetterPress(KMSelectable pressed)
     {
-       if (moduleSolved || currentCipher == null || isGenerating)
-          return;
-       pressed.AddInteractionPunch(.2f);
-       audio.PlaySoundAtTransform("KeyboardPress", transform);
-       if (!inSubmissionMode)
-       {
-          inSubmissionMode = true;
-          backupScreenTexts = new List<string>(screenTexts);
-          userInput = "";
-          currentPage = 1;
-       }
-       if (userInput.Length < 6)
-       {
-          userInput += pressed.GetComponentInChildren<TextMesh>().text;
-       }
-       else
-       {
-          userInput = pressed.GetComponentInChildren<TextMesh>().text;
-       }
+        if (moduleSolved || currentCipher == null || isGenerating)
+            return;
+        pressed.AddInteractionPunch(.2f);
+        audio.PlaySoundAtTransform("KeyboardPress", transform);
+
+        if (!inSubmissionMode)
+        {
+            if (currentCipher.IsMaze)
+            {
+                var letter = pressed.GetComponentInChildren<TextMesh>().text;
+                if (letter != "S" && !isMazeMode)
+                    return;
+                if (!isMazeMode)
+                {
+                    Debug.LogFormat("[Sudoku Cipher #{0}] {1}", moduleId, "Entering Movement Mode");
+                    backupScreenTexts = new List<string>(screenTexts);
+                    screenTexts.Clear();
+                    MazeModeLetterPress("S");
+                    isMazeMode = true;
+                }
+                else
+                    MazeModeLetterPress(letter);
+                return;
+            }
+
+            inSubmissionMode = true;
+            backupScreenTexts = new List<string>(screenTexts);
+            userInput = "";
+            currentPage = 1;
+        }
+
+        if (userInput.Length < 6)
+        {
+            userInput += pressed.GetComponentInChildren<TextMesh>().text;
+        }
+        else
+        {
+            userInput = pressed.GetComponentInChildren<TextMesh>().text;
+        }
     }
 
+    private int mazeLives;
+    private int currentMazeLives;
+    private void MazeModeLetterPress(string letter)
+    {
+        var currentLetter = screenTexts.Count > 1 ? screenTexts[1] : "?";
+        screenTexts.Clear();
+        var value = currentCipher.Move(moduleId, letter);
+        switch (value)
+        {
+            case "*":
+                Debug.LogFormat("[Sudoku Cipher #{0}] {1}", moduleId, $"Incorrect movement, Strike.");
+                audio.PlaySoundAtTransform("StrikeSFX", transform);
+                module.HandleStrike();
+                ResetToInitialState();
+                return;
+            case "!":
+            {
+                currentMazeLives -= 1;
+                if (currentMazeLives == 0)
+                {
+                    Debug.LogFormat("[Sudoku Cipher #{0}] {1}", moduleId, $"Maze life lost.");
+                    audio.PlaySoundAtTransform("StrikeSFX", transform);
+                    module.HandleStrike();
+                    ResetToInitialState();
+                    PopulateScreens();
+                    return;
+                }
+                break;
+            }
+        }
+        screenTexts.Add(mazeLives > 0 ? $"❤{currentMazeLives}" : "");
+        screenTexts.Add(value != "!" ? value : currentLetter);
+        screenTexts.Add("");
+    }
+    
     public void Enqueue(string type, ISudokuData sudokuData)
     {
-
-       if (currentCipher == null)
-       {
-          currentCipher = CipherFactory.CreateCipher(type, sudokuData);
-          PopulateScreens();
-       }
-       else 
-          queuedSudokuTypes.Enqueue(new SudokuData(type, sudokuData));
+        if (currentCipher == null)
+        {
+            currentCipher = CipherFactory.CreateCipher(type, sudokuData);
+            PopulateScreens();
+        }
+        else
+        {
+            Debug.LogFormat("[Sudoku Cipher #{0}] {1}", moduleId, $"Sudoku completed, queueing new cipher - {type}.");
+            queuedSudokuTypes.Enqueue(new SudokuData(type, sudokuData));
+        }
+    }
+    
+    private void ResetToInitialState()
+    {
+        screenTexts = new List<string>(backupScreenTexts);
+        userInput = "";
+        inSubmissionMode = false;
+        isMazeMode = false;
+        currentPage = 1;
     }
 }

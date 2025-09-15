@@ -28,9 +28,8 @@ namespace KModkit.Ciphers
                 .Select(g => g.Select(x => x.value).ToArray())
                 .ToArray();
             thermos = sudokuData.thermos;
+            Name = "Thermo";
         }
-
-        public string Name => "Thermo";
 
         public override IEnumerator GeneratePuzzle(Action<CipherResult> onComplete)
         {
@@ -50,7 +49,7 @@ namespace KModkit.Ciphers
                     {
                         EncryptedWord = null,
                         UnencryptedWord = null,
-                        ScreenTexts = new List<string> { "ERROR" }
+                        ScreenTexts = new List<string> { "Error" }
                     };
                 }
                 finally
@@ -73,6 +72,10 @@ namespace KModkit.Ciphers
                 List<string> keyWords;
                 string letterShifts;
                 var letterGrid = GenerateLetterGrid(out keyWords, out letterShifts);
+                List<string> debugLogs = new List<string>();
+                debugLogs.Add($"Keywords: {string.Join("", keyWords.ToArray())}");
+                debugLogs.Add("Letter shifts: " + letterShifts);
+                debugLogs.Add("Letter grid: " + string.Join("", letterGrid.SelectMany(x => x.Select(n => n.ToString()).ToArray()).ToArray()));
                 var unencryptedWord = new Data().PickBestWord(6, w => ScoreWord(w, letterGrid, testedWords));
                 testedWords.Add(unencryptedWord);
                 
@@ -116,8 +119,6 @@ namespace KModkit.Ciphers
                     thermoBulbs[bulbCoord] = endCoord;
                 }
                 
-                //Debug.Log(string.Join("", letterSnakeArray.Select(x => x.ToString()).ToArray()));
-                //Debug.Log(string.Join("", sudokuSnakeArray.Select(x => x.ToString()).ToArray()));
                 var result = FindValidPath(unencryptedWord, letterSnakeArray, sudokuSnakeArray, validStops, thermoBulbs);
                 if (!result.Success) continue;
 
@@ -132,6 +133,7 @@ namespace KModkit.Ciphers
                     EncryptedWord = null,
                     UnencryptedWord = unencryptedWord,
                     ScreenTexts = screenTexts,
+                    DebugLogs = debugLogs
                 };
             }
 
@@ -139,7 +141,7 @@ namespace KModkit.Ciphers
             {
                 EncryptedWord = null,
                 UnencryptedWord = null,
-                ScreenTexts = new List<string> { "ERROR" },
+                ScreenTexts = new List<string> { "Error" },
             };
         }
 
@@ -148,31 +150,36 @@ namespace KModkit.Ciphers
             public bool Success;
             public string EncryptionData;
         }
-
-        private PathResult FindValidPath(string word, char[] letterSnake, int[] sudokuSnake, List<int> validStops, Dictionary<int, int> thermoBulbs)
+        
+        private PathResult FindValidPath(
+            string word,
+            char[] letterSnake,
+            int[] sudokuSnake,
+            List<int> validStops,
+            Dictionary<int, int> thermoBulbs)
         {
             var currentPosition = -1;
             var currentLetter = 0;
-            var encryptionData = "";
+            var moves = new List<int>();
             var attempts = 0;
-            var visited = new HashSet<int>(); 
-            const int maxAttempts = 100;
+            const int maxAttempts = 1000;
+
+            var triedStates = new HashSet<string>();
 
             while (currentLetter < word.Length && attempts < maxAttempts)
             {
+                attempts++;
+
                 var validMoves = new List<int>();
+
                 for (var d = 1; d <= 9; d++)
                 {
                     var nextPos = currentPosition + d;
-                    if (nextPos >= 81 || nextPos < 0 || visited.Contains(nextPos))
+                    if (nextPos < 0 || nextPos >= letterSnake.Length)
                         continue;
-                    
-                    if (nextPos >= letterSnake.Length || nextPos >= sudokuSnake.Length)
-                        continue;
-
                     var letter = letterSnake[nextPos];
                     var number = sudokuSnake[nextPos];
-                    if (letter == word[currentLetter] && !thermoBulbs.ContainsKey(nextPos))
+                    if (letter == word[currentLetter])
                     {
                         validMoves.Clear();
                         validMoves.Add(d);
@@ -184,60 +191,67 @@ namespace KModkit.Ciphers
 
                 if (validMoves.Count == 0)
                 {
-                    if (encryptionData.Length == 0)
+                    if (moves.Count == 0)
                         return new PathResult { Success = false };
-                    
-                    var lastMoveIndex = encryptionData.Length - 1;
-                    encryptionData = encryptionData.Substring(0, lastMoveIndex);
-                    visited.Remove(currentPosition);
-                    currentLetter = currentLetter > 0 ? currentLetter - 1 : 0;
+
+                    moves.RemoveAt(moves.Count - 1);
+                    currentLetter = Math.Max(0, currentLetter - 1);
                     
                     currentPosition = -1;
-                    foreach (var nextPos in encryptionData.Select(c => c - '0').Select(revMove => currentPosition + revMove))
+                    foreach (var step in moves)
                     {
-                        if (nextPos >= 81 || nextPos < 0 || nextPos >= letterSnake.Length)
-                            return new PathResult { Success = false };
-                        currentPosition = nextPos;
-                        int revJumpTo;
-                        if (!thermoBulbs.TryGetValue(currentPosition, out revJumpTo) || visited.Contains(revJumpTo))
-                            continue;
-                        if (revJumpTo >= 81 || revJumpTo < 0 || revJumpTo >= letterSnake.Length)
-                            return new PathResult { Success = false };
-                        currentPosition = revJumpTo;
+                        currentPosition += step;
+                        int jumpTo;
+                        if (thermoBulbs.TryGetValue(currentPosition, out jumpTo))
+                            currentPosition = jumpTo;
                     }
-                    attempts++;
                     continue;
                 }
-                
-                var move = validMoves[random.Next(validMoves.Count)];
-                currentPosition += move;
-                
-                int jumpTo;
-                if (thermoBulbs.TryGetValue(currentPosition, out jumpTo) && !visited.Contains(jumpTo))
-                {
-                    if (jumpTo >= 81 || jumpTo < 0 || jumpTo >= letterSnake.Length)
-                        return new PathResult { Success = false };
-                    currentPosition = jumpTo;
-                    visited.Add(jumpTo);
-                }
 
-                encryptionData += move.ToString();
-                visited.Add(currentPosition);
+                var move = validMoves[random.Next(validMoves.Count)];
+                var nextPosFinal = currentPosition + move;
+
+                moves.Add(move);
+
+                int jump;
+                currentPosition = thermoBulbs.TryGetValue(nextPosFinal, out jump) ? jump : nextPosFinal;
+                
                 if (letterSnake[currentPosition] == word[currentLetter])
                     currentLetter++;
-                attempts++;
+                
+                var stateKey = currentPosition + ":" + currentLetter;
+                if (triedStates.Contains(stateKey))
+                {
+                    if (moves.Count <= 0) 
+                        continue;
+                    moves.RemoveAt(moves.Count - 1);
+                    currentLetter = Math.Max(0, currentLetter - 1);
+                    currentPosition = -1;
+                    foreach (var step in moves)
+                    {
+                        currentPosition += step;
+                        int jumpEnd;
+                        if (thermoBulbs.TryGetValue(currentPosition, out jumpEnd))
+                            currentPosition = jumpEnd;
+                    }
+                }
+                else
+                {
+                    triedStates.Add(stateKey);
+                }
             }
 
             return new PathResult
             {
                 Success = currentLetter == word.Length,
-                EncryptionData = encryptionData
+                EncryptionData = string.Join("", moves.Select(x => x.ToString()).ToArray())
             };
         }
 
+
         private int ScoreWord(string word, char[][] letterGrid, HashSet<string> testedWords)
         {
-            if (testedWords.Contains(word) || word.Any(letter => word.Count(x => x == letter) > 2))
+            if (testedWords.Contains(word) || word.Length != word.Distinct().Count())
                 return 0;
             
             var matches = letterGrid
@@ -261,10 +275,6 @@ namespace KModkit.Ciphers
                     for (var c = 8; c >= 0; c--)
                         snakeOrder.Add(new CellRef(r, c));
             }
-
-            var coordToSnakeIndex = new Dictionary<int, int>();
-            for (var i = 0; i < snakeOrder.Count; i++)
-                coordToSnakeIndex[snakeOrder[i].Row * 9 + snakeOrder[i].Col] = i;
             
             var letterSnakeArray = snakeOrder.Select(pos => letterGrid[pos.Row][pos.Col]).ToArray();
             var letterPositions = new List<int>[word.Length];

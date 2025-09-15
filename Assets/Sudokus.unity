@@ -156,11 +156,6 @@ Prefab:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 114478660663838060, guid: 9fabdfe08f6dda04695db933e1d02a44,
-        type: 2}
-      propertyPath: sudokuTypeName
-      value: AntiKnight
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 9fabdfe08f6dda04695db933e1d02a44, type: 2}
   m_IsPrefabParent: 0
@@ -210,6 +205,22 @@ Prefab:
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 91b67f1c3066b6243b98b5a0f6b73b1f, type: 2}
   m_IsPrefabParent: 0
+--- !u!1 &819273214 stripped
+GameObject:
+  m_PrefabParentObject: {fileID: 1476060975470908, guid: d3ad047b9b4aabc4590c2222f8885c36,
+    type: 2}
+  m_PrefabInternal: {fileID: 1098879016}
+--- !u!114 &819273215
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 819273214}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96a2fc4ae3e690a498a0d85a2b5e0b99, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &977645016
 GameObject:
   m_ObjectHideFlags: 0
@@ -380,23 +391,6 @@ Prefab:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 4978111026468768, guid: b972dffcba8e9cc4b9ec1c537cd97ea6, type: 2}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4978111026468768, guid: b972dffcba8e9cc4b9ec1c537cd97ea6, type: 2}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4978111026468768, guid: b972dffcba8e9cc4b9ec1c537cd97ea6, type: 2}
-      propertyPath: m_LocalScale.x
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 114432760385017216, guid: b972dffcba8e9cc4b9ec1c537cd97ea6,
-        type: 2}
-      propertyPath: sudokuTypeName
-      value: Thermo
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: b972dffcba8e9cc4b9ec1c537cd97ea6, type: 2}
   m_IsPrefabParent: 0
@@ -438,6 +432,10 @@ Prefab:
     - target: {fileID: 4977854663290798, guid: d3ad047b9b4aabc4590c2222f8885c36, type: 2}
       propertyPath: m_RootOrder
       value: 13
+      objectReference: {fileID: 0}
+    - target: {fileID: 1476060975470908, guid: d3ad047b9b4aabc4590c2222f8885c36, type: 2}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: d3ad047b9b4aabc4590c2222f8885c36, type: 2}
@@ -577,11 +575,6 @@ Prefab:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 114495401415559546, guid: 55e650f4542309e4ab92526b5b0b3daa,
-        type: 2}
-      propertyPath: sudokuJson
-      value: 
-      objectReference: {fileID: 4900000, guid: e964af38d7f1b9e4eb4e94317b0f5ac5, type: 3}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 55e650f4542309e4ab92526b5b0b3daa, type: 2}
   m_IsPrefabParent: 0
@@ -739,15 +732,6 @@ Prefab:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 114665693369433466, guid: e0cc79f27b641594a8082a83dc82de5c,
-        type: 2}
-      propertyPath: sudokuTypeName
-      value: Skyscraper
-      objectReference: {fileID: 0}
-    - target: {fileID: 1816825607620224, guid: e0cc79f27b641594a8082a83dc82de5c, type: 2}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: e0cc79f27b641594a8082a83dc82de5c, type: 2}
   m_IsPrefabParent: 0
@@ -762,6 +746,11 @@ Prefab:
         type: 2}
       propertyPath: Children.Array.size
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114848120511536268, guid: 8814ea52310d2614a9feda02ec355ae4,
+        type: 2}
+      propertyPath: AudioClips.Array.size
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 439642, guid: 8814ea52310d2614a9feda02ec355ae4, type: 2}
       propertyPath: m_LocalPosition.x
@@ -809,6 +798,11 @@ Prefab:
       propertyPath: FrontFaceOnly
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 114848120511536268, guid: 8814ea52310d2614a9feda02ec355ae4,
+        type: 2}
+      propertyPath: AudioClips.Array.data[0]
+      value: 
+      objectReference: {fileID: 8300000, guid: 64f945748ae0ed14984918741a75e0f8, type: 3}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 8814ea52310d2614a9feda02ec355ae4, type: 2}
   m_IsPrefabParent: 0
