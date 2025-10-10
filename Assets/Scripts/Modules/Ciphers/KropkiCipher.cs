@@ -151,8 +151,8 @@ namespace KModkit.Ciphers
             var all = new List<Card>();
             all.AddRange(player);
             all.AddRange(table);
-            var ranks = all.Select(c => c.Rank).ToList();
             
+            var ranks = all.Select(c => c.Rank).ToList();
             // Full House
             if (ranks.Any(r => ranks.Count(x => x == r) == 3) &&
                 ranks.Any(r => ranks.Count(x => x == r) == 2))

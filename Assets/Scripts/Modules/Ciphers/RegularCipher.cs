@@ -15,6 +15,14 @@ namespace KModkit.Ciphers
         private float hue = 0f;
         private readonly TextAsset regularSudokuData;
 
+        private class CellCandidate
+        {
+            public int Row;
+            public int Col;
+            public char GridLetter;
+            public int Shift;
+        }
+
         public RegularCipher(TextAsset regularSudokuData)
         {
             this.regularSudokuData = regularSudokuData;
@@ -55,6 +63,8 @@ namespace KModkit.Ciphers
                 {
                     var shift = sudokuGrid[row][col];
                     var gridLetter = letterGrid[row][col];
+                    if (gridLetter == '#')
+                        continue;
 
                     var offset = (gridLetter - 'A' + shift) % 26;
                     var candidatePlain = (char)('A' + offset);
@@ -66,23 +76,45 @@ namespace KModkit.Ciphers
             var unencryptedWord = new Data().PickBestWord(6, scorer);
             encryptedWord = "";
             var encryptionData = "";
+            
             foreach (var plain in unencryptedWord)
             {
-                var found = false;
-                for (var row = 0; row < 9 && !found; row++)
+                var candidates = new List<CellCandidate>();
+                for (var row = 0; row < 9; row++)
                 {
-                    for (var col = 0; col < 9 && !found; col++)
+                    for (var col = 0; col < 9; col++)
                     {
-                        var shift = sudokuGrid[row][col];
                         var gridLetter = letterGrid[row][col];
+                        if (gridLetter == '#')
+                            continue;
+
+                        var shift = sudokuGrid[row][col];
                         var offset = (gridLetter - 'A' + shift) % 26;
                         var candidatePlain = (char)('A' + offset);
-                        if (candidatePlain != plain) continue;
-                        encryptedWord += gridLetter;
-                        encryptionData += $"{(char)('A' + col)}{row + 1}";
-                        found = true;
+
+                        if (candidatePlain == plain)
+                        {
+                            candidates.Add(new CellCandidate
+                            {
+                                Row = row,
+                                Col = col,
+                                GridLetter = gridLetter,
+                                Shift = shift
+                            });
+                        }
                     }
                 }
+                
+                if (candidates.Count == 0)
+                    continue;
+                
+                var chosen = candidates.PickRandom();
+                var clue = $"{(char)('A' + chosen.Col)}{chosen.Row + 1}";
+
+                debugLogs.Add($"Clue {clue}: Letter Grid: '{chosen.GridLetter}' + Sudoku Grid: {chosen.Shift} => '{plain}'");
+
+                encryptedWord += chosen.GridLetter;
+                encryptionData += clue;
             }
             yield return null;
 
