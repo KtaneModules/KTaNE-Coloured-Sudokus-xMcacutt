@@ -28,8 +28,12 @@ namespace KModkit.Ciphers
         {
             var wordIndex = random.Next(sudokuData.words.Count);
             var hiddenWord = new Data().PickBestWord(6, w => w == sudokuData.words[wordIndex] ? 0 : 1);
+
             var encryptedWord = string.Join("", sudokuData.words[wordIndex]
-                .Select((c, i) => ((char)('A' + (c - 'A' + hiddenWord[i] - 'A') % 26 + 1)).ToString()).ToArray());
+                .Select((c, i) =>
+                    (char)('A' + ((c - 'A' - (hiddenWord[i] - 'A' + 1) + 26) % 26)))
+                .Select(ch => ch.ToString())
+                .ToArray());
             var screenTexts = new List<string>();
             screenTexts.Add(encryptedWord);
             var word = sudokuData.words[wordIndex];
@@ -39,7 +43,12 @@ namespace KModkit.Ciphers
             screenTexts.Add(startCol.ToString() + startRow.ToString());
             screenTexts.Add(sudokuData.lengths[wordIndex].ToString() + word[0]);
             var debugLogs = new List<string>();
-            debugLogs.Add($"[GeneratePuzzle] Morse word: {encryptedWord}");
+            debugLogs.Add($"Starting letter: {word[0]}");
+            debugLogs.Add($"Starting coordinate: {startCol}{startRow}");
+            debugLogs.Add($"Word length: {sudokuData.lengths[wordIndex]}");
+            debugLogs.Add($"Morse code: {string.Join("", sudokuData.solution .Skip(startIndex) .Take(sudokuData.lengths[wordIndex]) .Select(x => x % 2 == 0 ? "-" : ".").ToArray())}");
+            debugLogs.Add($"Morse translated: {word}");
+            debugLogs.Add($"Encrypted text: {encryptedWord}");
             
             var result = new CipherResult()
             {

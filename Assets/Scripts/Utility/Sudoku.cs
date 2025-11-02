@@ -30,7 +30,7 @@ namespace KModkit
         private bool _isSolved;
         protected List<Color> SquareColours;
         protected ColouredSudokuSettings settings;
-        private Random random = new Random();
+        private static Random random = new Random();
 
         protected T SudokuData;
         protected readonly List<GameObject> Squares = new List<GameObject>();

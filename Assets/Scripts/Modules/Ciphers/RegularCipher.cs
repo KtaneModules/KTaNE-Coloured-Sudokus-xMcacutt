@@ -14,6 +14,7 @@ namespace KModkit.Ciphers
     {
         private float hue = 0f;
         private readonly TextAsset regularSudokuData;
+        private int[][] sudokuGrid;
 
         private class CellCandidate
         {
@@ -29,6 +30,16 @@ namespace KModkit.Ciphers
             Name = "Regular";
         }
         
+        public RegularCipher(RegularSudokuData regularSudokuData)
+        {
+            sudokuGrid = regularSudokuData.solution
+                .Select((value, index) => new { value, row = index / 9 })
+                .GroupBy(x => x.row)
+                .Select(g => g.Select(x => x.value).ToArray())
+                .ToArray();
+            Name = "Regular";
+        }
+        
         public override IEnumerator GeneratePuzzle(Action<CipherResult> onComplete)
         {
             List<string> keyWords;
@@ -37,23 +48,27 @@ namespace KModkit.Ciphers
 
             var debugLogs = new List<string>();
             
-            var indexedRegularPuzzles = JsonConvert.DeserializeObject<List<RegularSudokuData>>(regularSudokuData.text)
-                .Select((puzzle, index) => new { Puzzle = puzzle, Index = index })
-                .OrderBy(_ => UnityEngine.Random.value)
-                .ToList();
-            var currentPuzzle = indexedRegularPuzzles.PickRandom().Puzzle;
+            int[][] sudokuGridUnsolved = null;
 
-            var sudokuGrid = currentPuzzle.solution.Select((value, index) => new { value, row = index / 9 })
-                .GroupBy(x => x.row)
-                .Select(g => g.Select(x => x.value).ToArray())
-                .ToArray();
+            if (this.sudokuGrid == null)
+            {
+                var indexedRegularPuzzles = JsonConvert.DeserializeObject<List<RegularSudokuData>>(regularSudokuData.text)
+                    .Select((puzzle, index) => new { Puzzle = puzzle, Index = index })
+                    .OrderBy(_ => UnityEngine.Random.value)
+                    .ToList();
+                var currentPuzzle = indexedRegularPuzzles.PickRandom().Puzzle;
+                sudokuGrid = currentPuzzle.solution.Select((value, index) => new { value, row = index / 9 })
+                    .GroupBy(x => x.row)
+                    .Select(g => g.Select(x => x.value).ToArray())
+                    .ToArray();
+                sudokuGridUnsolved = currentPuzzle.grid.Select((value, index) => new { value, row = index / 9 })
+                    .GroupBy(x => x.row)
+                    .Select(g => g.Select(x => x.value).ToArray())
+                    .ToArray();
+            }
             debugLogs.Add("Sudoku grid: " + string.Join("", sudokuGrid.SelectMany(x => x.Select(n => n.ToString()).ToArray()).ToArray()));
             debugLogs.Add("Letter grid: " + string.Join("", letterGrid.SelectMany(x => x.Select(n => n.ToString()).ToArray()).ToArray()));
             
-            var sudokuGridUnsolved = currentPuzzle.grid.Select((value, index) => new { value, row = index / 9 })
-                .GroupBy(x => x.row)
-                .Select(g => g.Select(x => x.value).ToArray())
-                .ToArray();
 
             var encryptedWord = "";
             var encryptableLetters = new HashSet<char>();
@@ -123,19 +138,22 @@ namespace KModkit.Ciphers
             screenTexts.Add(encryptionData.Substring(6, 6));
             screenTexts.Add(letterShifts);
             screenTexts.AddRange(keyWords);
-            var cluesString = "";
-            for (var row = 0; row < 9; row++)
+            if (sudokuGridUnsolved != null)
             {
-                for (var col = 0; col < 9; col++)
+                var cluesString = "";
+                for (var row = 0; row < 9; row++)
                 {
-                    var cell = sudokuGridUnsolved[row][col];
-                    if (cell != 0) cluesString += $"{(char)('A' + col)}{row + 1}{cell}";
+                    for (var col = 0; col < 9; col++)
+                    {
+                        var cell = sudokuGridUnsolved[row][col];
+                        if (cell != 0) cluesString += $"{(char)('A' + col)}{row + 1}{cell}";
+                    }
                 }
+                var chunks = Enumerable.Range(0, cluesString.Length / 9)
+                    .Select(i => cluesString.Substring(i * 9, 9))
+                    .ToList();
+                screenTexts.AddRange(chunks);
             }
-            var chunks = Enumerable.Range(0, cluesString.Length / 9)
-                .Select(i => cluesString.Substring(i * 9, 9))
-                .ToList();
-            screenTexts.AddRange(chunks);
             var result = new CipherResult()
             {
                 EncryptedWord = encryptedWord,
@@ -144,7 +162,6 @@ namespace KModkit.Ciphers
                 DebugLogs =  debugLogs
             };
             onComplete(result);
-            yield break;
         }
 
         public override void SetColor(ref MeshRenderer renderer)

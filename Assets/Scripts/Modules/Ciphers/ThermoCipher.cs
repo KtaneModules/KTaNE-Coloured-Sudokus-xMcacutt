@@ -67,7 +67,7 @@ namespace KModkit.Ciphers
         private CipherResult RunGeneration()
         {
             var testedWords = new HashSet<string>();
-            for (var attempt = 0; attempt < 60; attempt++)
+            for (var attempt = 0; attempt < 100; attempt++)
             {
                 List<string> keyWords;
                 string letterShifts;
@@ -142,6 +142,7 @@ namespace KModkit.Ciphers
                 EncryptedWord = null,
                 UnencryptedWord = null,
                 ScreenTexts = new List<string> { "Error" },
+                DebugLogs = new List<string> { "Error, generation failed." }
             };
         }
 

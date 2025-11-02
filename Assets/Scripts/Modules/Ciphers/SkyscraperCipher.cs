@@ -104,12 +104,12 @@ namespace KModkit.Ciphers
                 yield break;
             }
 
-            Debug.LogWarning("Failed to generate a valid puzzle after multiple attempts.");
             var resultFail = new CipherResult()
             {
                 EncryptedWord = null,
                 UnencryptedWord = null,
                 ScreenTexts = new List<string>() {"Error"},
+                DebugLogs = new List<string> { "Error, generation failed." }
             };
             onComplete(resultFail);
         }

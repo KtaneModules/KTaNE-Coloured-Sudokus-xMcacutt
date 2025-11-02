@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using KModkit;
 using KModkit.Ciphers;
 using Newtonsoft.Json;
@@ -42,7 +43,6 @@ public class SudokuCipher : Module
     private string userInput = "";
     private int currentPage = 1;
     private bool moduleSelected;
-    private bool moduleSolved;
     private bool inSubmissionMode;
     private bool isGenerating;
     private bool isMazeMode;
@@ -58,7 +58,8 @@ public class SudokuCipher : Module
         "yellowSudoku",
         "whiteSudoku",
         "redSudoku",
-        "pinkSudoku"
+        "pinkSudoku",
+        "RegularSudoku"
     };
 
     protected override void ModuleStart()
@@ -66,23 +67,13 @@ public class SudokuCipher : Module
         sudokuCipherMeshRenderer.material = new Material(sudokuCipherMaterial);
         nextButton.OnInteract += () =>
         {
-            nextButton.AddInteractionPunch();
-            audio.PlaySoundAtTransform("ArrowPress.ogg", nextButton.transform);
-            var maxPage = Mathf.CeilToInt(screenTexts.Count / 3f);
-            currentPage++;
-            if (currentPage > maxPage)
-                currentPage = 1;
+            GoNextPage();
             return false;
         };
 
         previousButton.OnInteract += () =>
         {
-            previousButton.AddInteractionPunch();
-            audio.PlaySoundAtTransform("ArrowPress.ogg", previousButton.transform);
-            var maxPage = Mathf.CeilToInt(screenTexts.Count / 3f);
-            currentPage--;
-            if (currentPage < 1)
-                currentPage = maxPage;
+            GoPrevPage();
             return false;
         };
         submitButton.OnInteract += delegate()
@@ -102,8 +93,32 @@ public class SudokuCipher : Module
             };
         }
 
-        currentCipher = CipherFactory.CreateCipher("Regular", regularSudokuData);
-        PopulateScreens();
+        var modules = bomb.GetModuleIDs().Where(x => supportedModuleIds.Contains(x)).ToList();
+        if (modules.Count == 0)
+        {
+            currentCipher = CipherFactory.CreateCipher("Regular", regularSudokuData);
+            PopulateScreens();
+        }
+    }
+
+    private void GoNextPage()
+    {
+        nextButton.AddInteractionPunch();
+        audio.PlaySoundAtTransform("ArrowPress.ogg", nextButton.transform);
+        var maxPage = Mathf.CeilToInt(screenTexts.Count / 3f);
+        currentPage++;
+        if (currentPage > maxPage)
+            currentPage = 1;
+    }
+    
+    private void GoPrevPage()
+    {
+        previousButton.AddInteractionPunch();
+        audio.PlaySoundAtTransform("ArrowPress.ogg", previousButton.transform);
+        var maxPage = Mathf.CeilToInt(screenTexts.Count / 3f);
+        currentPage--;
+        if (currentPage < 1)
+            currentPage = maxPage;
     }
 
     private void PopulateScreens()
@@ -119,7 +134,6 @@ public class SudokuCipher : Module
 
         Debug.LogFormat("[Sudoku Cipher #{0}] {1}", moduleId, $"New Cipher (Stage {stage}) Generated - {currentCipher.Name}");
         
-        
         StartCoroutine(currentCipher.GeneratePuzzle(result =>
         {
             currentUnencryptedWord = result.UnencryptedWord;
@@ -133,10 +147,9 @@ public class SudokuCipher : Module
         }));
     }
 
+    private float hue = 0;
     private void Update()
     {
-        currentCipher?.SetColor(ref sudokuCipherMeshRenderer);
-
         var pageTexts = screenTexts
             .Skip(3 * (currentPage - 1))
             .Take(3)
@@ -152,7 +165,18 @@ public class SudokuCipher : Module
             screen2.text = "";
             screen3.text = userInput;
         }
-
+        
+        if (_isSolved)
+            return;
+        
+        currentCipher?.SetColor(ref sudokuCipherMeshRenderer);
+        if (currentCipher == null)
+        {
+            hue += Time.deltaTime * 0.1f;
+            if (hue > 1f) hue = 0f;
+            sudokuCipherMeshRenderer.material.color = Color.HSVToRGB(hue, 0.4f, 0.7f);
+        }
+        
         var modules = bomb.GetModuleIDs().Where(x => supportedModuleIds.Contains(x)).ToList();
         var solvedModules = bomb.GetSolvedModuleIDs().Where(x => supportedModuleIds.Contains(x)).ToList();
         foreach (var m in solvedModules)
@@ -160,6 +184,7 @@ public class SudokuCipher : Module
         if (modules.Count == 0 && queuedSudokuTypes.Count == 0 && currentCipher == null)
         {
             Debug.LogFormat("[Sudoku Cipher #{0}] {1}", moduleId, "Module Solved - No Remaining Sudokus");
+            sudokuCipherMeshRenderer.material.color = Color.HSVToRGB(0f, 0f, 0.5f);
             module.HandlePass();
         }
 
@@ -173,7 +198,7 @@ public class SudokuCipher : Module
 
     protected virtual void SubmitWord(KMSelectable button)
     {
-        if (moduleSolved || currentCipher == null || isGenerating)
+        if (_isSolved || currentCipher == null || isGenerating)
             return;
 
         button.AddInteractionPunch();
@@ -205,8 +230,9 @@ public class SudokuCipher : Module
             else if (modules.Count == 0 && !isGenerating)
             {
                 Debug.LogFormat("[Sudoku Cipher #{0}] {1}", moduleId, $"Module Solved - No Remaining Sudokus");
+                sudokuCipherMeshRenderer.material.color = Color.HSVToRGB(0f, 0f, 0.5f);
                 module.HandlePass();
-                moduleSolved = true;
+                _isSolved = true;
                 inSubmissionMode = false;
             }
             return;
@@ -235,7 +261,7 @@ public class SudokuCipher : Module
 
     private void LetterPress(KMSelectable pressed)
     {
-        if (moduleSolved || currentCipher == null || isGenerating)
+        if (_isSolved || currentCipher == null || isGenerating)
             return;
         pressed.AddInteractionPunch(.2f);
         audio.PlaySoundAtTransform("KeyboardPress", transform);
@@ -267,13 +293,9 @@ public class SudokuCipher : Module
         }
 
         if (userInput.Length < 6)
-        {
             userInput += pressed.GetComponentInChildren<TextMesh>().text;
-        }
         else
-        {
             userInput = pressed.GetComponentInChildren<TextMesh>().text;
-        }
     }
 
     private int mazeLives;
@@ -332,5 +354,69 @@ public class SudokuCipher : Module
         inSubmissionMode = false;
         isMazeMode = false;
         currentPage = 1;
+    }
+    
+#pragma warning disable 414
+    private readonly string TwitchHelpMessage = @"!{0} sub (press the submit button), !{0} l/r (move page left or right), !{0} input <text> (press the letter buttons on the keyboard)";
+#pragma warning restore 414
+	
+    IEnumerator ProcessTwitchCommand(string command)
+    {
+        command = command.ToLowerInvariant();
+        if (Regex.IsMatch(command, @"^\s*(?:sub)\s*$", RegexOptions.IgnoreCase))
+        {
+            yield return null;
+            SubmitWord(submitButton);
+            yield break;
+        }
+        var match = Regex.Match(command, @"^\s*([lr])\s*$", RegexOptions.IgnoreCase);
+        if (match.Success)
+        {
+            yield return null;
+            string direction = match.Groups[1].Value.ToLower();
+            if (direction == "l")
+                GoPrevPage();
+            else if (direction == "r")
+                GoNextPage();
+            yield break;
+        }
+        match = Regex.Match(command, @"^\s*(?:input) (\D+)\s*$", RegexOptions.IgnoreCase);
+        if (match.Success)
+        {
+            yield return null;
+            var text = match.Groups[1].Value.ToLower();
+            foreach (var c in text.ToUpperInvariant())
+            {
+                var pos = GetPositionFromChar(c);
+                if (pos != -1 && pos < keyboard.Length)
+                    keyboard[pos].OnInteract();
+                else
+                    yield break;
+                yield return new WaitForSeconds(0.1f);
+            }
+            yield break;
+        }
+        yield return null;
+    }
+    
+    protected IEnumerator TwitchHandleForcedSolve()
+    {
+        if (_isSolved)
+            yield break;
+        audio.PlaySoundAtTransform("SolveSFX", transform);
+        userInput = "";
+        screenTexts.Clear();
+        currentCipher = null;
+        inSubmissionMode = false;
+        Debug.LogFormat("[Sudoku Cipher #{0}] {1}", moduleId, $"Module Solved - Forced Solve");
+        sudokuCipherMeshRenderer.material.color = Color.HSVToRGB(0f, 0f, 0.5f);
+        module.HandlePass();
+        _isSolved = true;
+        inSubmissionMode = false;
+    }
+
+    private int getPositionFromChar(char c)
+    {
+        return "QWERTYUIOPASDFGHJKLZXCVBNM".IndexOf(c);
     }
 }

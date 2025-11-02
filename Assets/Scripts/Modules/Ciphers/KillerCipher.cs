@@ -30,7 +30,6 @@ namespace KModkit.Ciphers
     public class KillerCipher : Cipher
     {
         private float hue = 0f;
-        private int[][] sudokuGrid;
         private char[][] letterGrid;
         private List<int> cages;
         private Random random = new Random();
@@ -40,11 +39,6 @@ namespace KModkit.Ciphers
 
         public KillerCipher(KillerSudokuData sudokuData)
         {
-            var expandedGrid = sudokuData.solution.Select((value, index) => new { value, row = index / 9 })
-                .GroupBy(x => x.row)
-                .Select(g => g.Select(x => x.value).ToArray())
-                .ToArray();
-            sudokuGrid = expandedGrid;
             cages = sudokuData.cages;
             Name = "Killer";
             IsMaze = true;

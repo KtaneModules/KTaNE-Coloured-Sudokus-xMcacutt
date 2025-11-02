@@ -365,7 +365,8 @@ namespace Modules.Ciphers
             {
                 EncryptedWord = null,
                 UnencryptedWord = null,
-                ScreenTexts = new List<string> { "Error" }
+                ScreenTexts = new List<string> { "Error" },
+                DebugLogs = new List<string> { "Error, generation failed." }
             };
         }
 

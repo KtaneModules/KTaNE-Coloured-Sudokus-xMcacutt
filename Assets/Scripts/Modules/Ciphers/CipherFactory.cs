@@ -42,6 +42,8 @@ namespace KModkit.Ciphers
                     return new SandwichCipher(sudokuData as SandwichSudokuData);
                 case "Kropki":
                     return new KropkiCipher(sudokuData as KropkiSudokuData);
+                case "Regular":
+                    return new RegularCipher(sudokuData as RegularSudokuData);
                 default:
                     return null;
             }

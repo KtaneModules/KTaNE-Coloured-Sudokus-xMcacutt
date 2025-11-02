@@ -105,11 +105,11 @@ namespace KModkit.Ciphers
                 letterGrid = GenerateLetterGrid(out keyWords, out letterShifts);
             } while (!data.AnyWordMatches(6, w => ScoreWord(w, letterGrid) == 1));
             List<string> debugLogs = new List<string>();
-            debugLogs.Add($"Keywords: {string.Join("", keyWords.ToArray())}");
+            debugLogs.Add($"Keywords: {string.Join(" ", keyWords.ToArray())}");
             debugLogs.Add("Letter shifts: " + letterShifts);
             debugLogs.Add("Letter grid: " + string.Join("", letterGrid.SelectMany(x => x.Select(n => n.ToString()).ToArray()).ToArray()));
             var unencryptedWord = data.PickBestWord(6, w => ScoreWord(w, letterGrid));
-
+            
             outerGrid = new List<string>();
             innerGrid = new List<string>();
 
@@ -126,7 +126,6 @@ namespace KModkit.Ciphers
                 else
                     outerGrid.Add(data.PickBestWord(4, 8, w => CalculateSandwichSum(w) != value ? 1 : 0));
             }
-            
 
             innerGrid = new List<string>();
             var usedRows = new HashSet<int>();
@@ -155,8 +154,8 @@ namespace KModkit.Ciphers
                 }
             }
             
-            debugLogs.Add($"Valid Outer Grid Word: {outerGrid[validBox]}");
-            debugLogs.Add("Valid Inner Grid Words: " + string.Join(", ", validInnerGridWords.ToArray()));
+            debugLogs.Add($"Outer Grid Words: {string.Join(" ", outerGrid.Select((x, i) => i == validBox ? x + "*" : x).ToArray())}");
+            debugLogs.Add($"Inner Grid Words: {string.Join(" ", innerGrid.Select(x => validInnerGridWords.Contains(x) ? x + "*" : x).ToArray())}");
 
             var screenTexts = new List<string>();
             screenTexts.Add(letterShifts);
