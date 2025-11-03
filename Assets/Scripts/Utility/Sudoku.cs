@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using UnityEngine;
 using Random = System.Random;
@@ -390,6 +391,7 @@ namespace KModkit
                 resetButton.OnInteract();
                 yield break;
             }
+            command = Regex.Replace(command, @"\s+", " ").Trim(); //Remove excess spaces from the command
             string[] parameters = command.Split(' '); //Split the command by spaces
             for (int i = 0; i < parameters.Length; i++) //Verify each part of the command is valid
             {
