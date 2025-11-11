@@ -32,6 +32,7 @@ namespace KModkit
         protected List<Color> SquareColours;
         protected ColouredSudokuSettings settings;
         private static Random random = new Random();
+        public bool startSolvedDebug = false;
 
         protected T SudokuData;
         protected readonly List<GameObject> Squares = new List<GameObject>();
@@ -54,7 +55,9 @@ namespace KModkit
             var modConfig = new ModConfig<ColouredSudokuSettings>("Coloured Sudokus");
             settings = modConfig.Read();
             modConfig.Write(settings);
-            
+#if UNITY_EDITOR
+            settings.startSolved = startSolvedDebug;
+#endif            
             moduleId = _moduleIdCounter++;
             InitializeMaterials();
             var indexedPuzzles = JsonConvert.DeserializeObject<List<T>>(sudokuJson.text)
@@ -276,7 +279,7 @@ namespace KModkit
                     var square = Instantiate(squarePrefab, Vector3.zero, Quaternion.identity);
                     square.transform.SetParent(topLeft, false);
                     square.transform.localPosition = new Vector3(offset.x, 0, offset.z);
-                    var value = SudokuData.grid[index];
+                    var value = settings.startSolved ? SudokuData.solution[index] : SudokuData.grid[index];
                     SquareIndices[index] = value;
                     square.GetComponent<MeshRenderer>().material.color = SquareColours[value];
                     if ((colorblindMode.ColorblindModeActive || settings.babyMode) && value != 0)

@@ -26,8 +26,9 @@ namespace KModkit.Ciphers
 
         public override IEnumerator GeneratePuzzle(Action<CipherResult> onComplete)
         {
+            var data = new Data();
             var wordIndex = random.Next(sudokuData.words.Count);
-            var hiddenWord = new Data().PickBestWord(6, w => w == sudokuData.words[wordIndex] ? 0 : 1);
+            var hiddenWord = data.PickBestWord(6, w => w == sudokuData.words[wordIndex] ? 0 : 1);
 
             var encryptedWord = string.Join("", sudokuData.words[wordIndex]
                 .Select((c, i) =>

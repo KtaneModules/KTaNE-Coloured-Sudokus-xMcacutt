@@ -59,6 +59,7 @@ namespace KModkit.Ciphers
         private CipherResult RunGeneration()
         {
             var success = true;
+            var data = new Data();
             const int attempts = 30;
             for (var i = 0; i < attempts; i++)
             {
@@ -66,9 +67,9 @@ namespace KModkit.Ciphers
                 string letterShifts;
                 var letterGrid = GenerateLetterGrid(out keyWords, out letterShifts);
 
-                var targetWord = new Data().PickBestWord(6, w => w.Distinct().Count() == w.Length ? 1 : 0);
+                var targetWord = data.PickBestWord(6, w => w.Distinct().Count() == w.Length ? 1 : 0);
                 if (string.IsNullOrEmpty(targetWord))
-                    return new CipherResult { UnencryptedWord = "Error", ScreenTexts = null };
+                    return ErrorResult;
 
                 var letterPositions = new Dictionary<char, List<CellRef>>();
                 var selectedPositions = new Dictionary<char, CellRef>();
@@ -109,7 +110,7 @@ namespace KModkit.Ciphers
                 
                 for (var rowIndex = 0; rowIndex < rowShifts.Length; rowIndex++)
                     if (!usedRows.Contains(i))
-                        rowShifts[i] = random.Next(0, 9);
+                        rowShifts[i] = Random.Next(0, 9);
 
                 for (var rowIndex = 0; rowIndex < 9; rowIndex++)
                     letterGrid[rowIndex] = ShiftRow(letterGrid[rowIndex], rowShifts[rowIndex]);
@@ -131,7 +132,7 @@ namespace KModkit.Ciphers
                 
                 for (var colIndex = 0; colIndex < 9; colIndex++)
                     if (!usedColumns.Contains(colIndex))
-                        columnShifts[colIndex] = random.Next(0, 9);
+                        columnShifts[colIndex] = Random.Next(0, 9);
                 
                 for (var colIndex = 0; colIndex < 9; colIndex++)
                 {

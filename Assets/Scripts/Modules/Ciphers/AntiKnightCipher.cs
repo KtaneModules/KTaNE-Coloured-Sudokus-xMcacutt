@@ -14,7 +14,25 @@ namespace Modules.Ciphers
     public class AntiKnightCipher : Cipher
     {
         private int[][] sudokuGrid;
+        
+        private static readonly int[][] BishopDirections = new int[][]
+        {
+            new int[] { 1,  1 }, new int[] { 1, -1 },
+            new int[] {-1,  1 }, new int[] {-1, -1 }
+        };
 
+        private static readonly int[][] RookDirections = new int[][]
+        {
+            new int[] { 1,  0 }, new int[] {-1,  0 },
+            new int[] { 0,  1 }, new int[] { 0, -1 }
+        };
+
+        private static readonly int[,] KnightMoves = new int[,]
+        {
+            { 1, 2 }, { 1, -2 }, {-1, 2 }, {-1, -2 },
+            { 2, 1 }, { 2, -1 }, {-2, 1 }, {-2, -1 }
+        };
+        
         public AntiKnightCipher(AntiKnightSudokuData sudokuData)
         {
             sudokuGrid = sudokuData.solution.Select((value, index) => new { value, row = index / 9 })
@@ -57,86 +75,7 @@ namespace Modules.Ciphers
             if (num >= 7) return PieceType.Knight;
             return PieceType.None;
         }
-
-        private int ComputeAttackCount(List<PieceCandidate> selectedPieces, int rows, int columns,
-            out List<int> multiAttackedPositions)
-        {
-            multiAttackedPositions = null;
-            var attackCounts = new int[rows * columns];
-            var occupiedPositions = new bool[rows * columns];
-            foreach (var piece in selectedPieces)
-                occupiedPositions[piece.Row * columns + piece.Column] = true;
-
-            foreach (var piece in selectedPieces)
-            {
-                int row = piece.Row, column = piece.Column;
-                if (piece.Type == PieceType.King)
-                {
-                    for (int deltaRow = -1; deltaRow <= 1; deltaRow++)
-                    for (int deltaColumn = -1; deltaColumn <= 1; deltaColumn++)
-                    {
-                        if (deltaRow == 0 && deltaColumn == 0) continue;
-                        int targetRow = row + deltaRow, targetColumn = column + deltaColumn;
-                        if (targetRow < 0 || targetRow >= rows || targetColumn < 0 || targetColumn >= columns) continue;
-                        var targetIndex = targetRow * columns + targetColumn;
-                        if (!occupiedPositions[targetIndex]) attackCounts[targetIndex]++;
-                    }
-                }
-                else if (piece.Type == PieceType.Knight)
-                {
-                    int[,] knightOffsets = { { 2, 1 }, { 2, -1 }, { -2, 1 }, { -2, -1 }, { 1, 2 }, { 1, -2 }, { -1, 2 }, { -1, -2 } };
-                    for (int i = 0; i < 8; i++)
-                    {
-                        int targetRow = row + knightOffsets[i, 0], targetColumn = column + knightOffsets[i, 1];
-                        if (targetRow < 0 || targetRow >= rows || targetColumn < 0 || targetColumn >= columns) continue;
-                        var targetIndex = targetRow * columns + targetColumn;
-                        if (!occupiedPositions[targetIndex]) attackCounts[targetIndex]++;
-                    }
-                }
-                else if (piece.Type == PieceType.Bishop)
-                {
-                    AddRayIncrements(attackCounts, occupiedPositions, row, column, 1, 1, rows, columns);
-                    AddRayIncrements(attackCounts, occupiedPositions, row, column, 1, -1, rows, columns);
-                    AddRayIncrements(attackCounts, occupiedPositions, row, column, -1, 1, rows, columns);
-                    AddRayIncrements(attackCounts, occupiedPositions, row, column, -1, -1, rows, columns);
-                }
-                else if (piece.Type == PieceType.Rook)
-                {
-                    AddRayIncrements(attackCounts, occupiedPositions, row, column, 1, 0, rows, columns);
-                    AddRayIncrements(attackCounts, occupiedPositions, row, column, -1, 0, rows, columns);
-                    AddRayIncrements(attackCounts, occupiedPositions, row, column, 0, 1, rows, columns);
-                    AddRayIncrements(attackCounts, occupiedPositions, row, column, 0, -1, rows, columns);
-                }
-            }
-
-            int multiAttackCount = 0;
-            for (int i = 0; i < attackCounts.Length; i++)
-                if (attackCounts[i] >= 2)
-                    multiAttackCount++;
-            
-            if (multiAttackCount != 6) return multiAttackCount;
-            multiAttackedPositions = new List<int>(6);
-            for (int i = 0; i < attackCounts.Length; i++)
-                if (attackCounts[i] >= 2)
-                    multiAttackedPositions.Add(i);
-
-            return multiAttackCount;
-        }
-
-        private void AddRayIncrements(int[] attackCounts, bool[] occupiedPositions, int row, int column, int deltaRow,
-            int deltaColumn, int rows, int columns)
-        {
-            int currentRow = row + deltaRow, currentColumn = column + deltaColumn;
-            while (currentRow >= 0 && currentRow < rows && currentColumn >= 0 && currentColumn < columns)
-            {
-                var currentIndex = currentRow * columns + currentColumn;
-                if (occupiedPositions[currentIndex]) break;
-                attackCounts[currentIndex]++;
-                currentRow += deltaRow;
-                currentColumn += deltaColumn;
-            }
-        }
-
+        
         private int EmptyBoardAttackCount(PieceType type, int row, int column, int rows, int columns)
         {
             int count = 0;
@@ -185,17 +124,6 @@ namespace Modules.Ciphers
             return count;
         }
 
-        private bool TryFindAnagramWord(char[] letters, out string foundWord)
-        {
-            foundWord = null;
-            var data = new Data();
-            var candidate = data.PickBestWord(6, w => w.OrderBy(c => c).SequenceEqual(letters.OrderBy(c => c)) ? 1 : 0);
-            if (candidate == null || !candidate.OrderBy(c => c).SequenceEqual(letters.OrderBy(c => c)))
-                return false;
-            foundWord = candidate;
-            return true;
-        }
-
         public override IEnumerator GeneratePuzzle(Action<CipherResult> onComplete)
         {
             CipherResult result = null;
@@ -207,14 +135,9 @@ namespace Modules.Ciphers
                 {
                     result = RunGeneration();
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    result = new CipherResult
-                    {
-                        EncryptedWord = null,
-                        UnencryptedWord = null,
-                        ScreenTexts = new List<string> { "Error" }
-                    };
+                    result = ErrorResult;
                 }
                 finally
                 {
@@ -230,144 +153,236 @@ namespace Modules.Ciphers
 
         private CipherResult RunGeneration()
         {
+            var data = new Data();
             List<string> keyWords;
             string letterShifts;
             var letterGrid = GenerateLetterGrid(out keyWords, out letterShifts);
-            List<string> debugLogs = new List<string>();
+            var debugLogs = new List<string>();
             debugLogs.Add($"Keywords: {string.Join("", keyWords.ToArray())}");
             debugLogs.Add("Letter shifts: " + letterShifts);
             debugLogs.Add("Letter grid: " + string.Join("", letterGrid.SelectMany(x => x.Select(n => n.ToString()).ToArray()).ToArray()));
-            var random = new Random();
-            const int maxAttempts = 30;
-
-            var rows = letterGrid.Length;
-            var columns = letterGrid[0].Length;
-
-            var allCandidates = new List<PieceCandidate>();
-            for (int r = 0; r < sudokuGrid.Length; r++)
-                for (int c = 0; c < sudokuGrid[0].Length; c++)
+            
+            var candidates = new List<PieceCandidate>();
+            for (var r = 0; r < 9; r++)
+            for (var c = 0; c < 9; c++)
+            {
+                var type = MapNumberToPiece(sudokuGrid[r][c]);
+                if (type == PieceType.None) continue;
+                var attacks = EmptyBoardAttackCount(type, r, c, 9, 9);
+                candidates.Add(new PieceCandidate(type, r, c, attacks));
+            }
+            
+            var selected = new List<PieceCandidate>();
+            var pool = new List<PieceCandidate>();
+            var multi = new List<int>();
+            var knights = new List<PieceCandidate>();
+            var bishops = new List<PieceCandidate>();
+            var rooks   = new List<PieceCandidate>();
+            var kings   = new List<PieceCandidate>();
+            
+            for (var attempt = 0; attempt < 200000; attempt++)
+            {
+                selected.Clear();
+                pool.Clear();
+                multi.Clear();
+                knights.Clear();
+                bishops.Clear();
+                rooks.Clear();
+                kings.Clear();
+                var hasRook = false;
+                var hasKnight = false;
+                
+                foreach (var p in candidates)
                 {
-                    var type = MapNumberToPiece(sudokuGrid[r][c]);
-                    if (type != PieceType.None)
-                        allCandidates.Add(new PieceCandidate(type, r, c, EmptyBoardAttackCount(type, r, c, rows, columns)));
+                    switch (p.Type)
+                    {
+                        case PieceType.Knight: 
+                            knights.Add(p); 
+                            break;
+                        case PieceType.Bishop: 
+                            bishops.Add(p); 
+                            break;
+                        case PieceType.Rook:   
+                            rooks.Add(p); 
+                            break;
+                        case PieceType.King:   
+                            kings.Add(p); 
+                            break;
+                    }
                 }
 
-            if (allCandidates.Count == 0)
+                pool.AddRange(knights.Take(8));
+                pool.AddRange(bishops.Take(8));
+                pool.AddRange(rooks.Take(3));
+                pool.AddRange(kings.Take(4));
+
+                pool = pool.OrderBy(_ => Random.Next()).ToList();
+
+                foreach (var candidate in pool)
+                {
+                    if (selected.Count >= 8) break;
+                    if (candidate.Type == PieceType.Rook && hasRook) continue;
+                    if (candidate.Type == PieceType.Knight) hasKnight = true;
+                    if (candidate.Type == PieceType.Rook) hasRook = true;
+                    selected.Add(candidate);
+                }
+
+                if (!hasKnight && knights.Count > 0)
+                {
+                    if (selected.Count >= 8) selected.RemoveAt(Random.Next(selected.Count));
+                    selected.Add(knights[0]);
+                }
+
+                var occupied = new bool[81];
+                var attackCount = new int[81];
+                foreach (var p in selected)
+                    MarkAttacks(p, occupied, attackCount, 9, 9);
+
+                for (var i = 0; i < 81; i++)
+                    if (attackCount[i] >= 2 && !occupied[i])
+                        multi.Add(i);
+
+                if (multi.Count != 6) continue;
+
+                var letters = multi.Select(i => letterGrid[i/9][i%9]).ToArray();
+                if (letters.Any(ch => ch == '#')) continue;
+
+                Array.Sort(letters);
+                var sorted = new string(letters);
+
+                var word = data.PickBestWord(6, w =>
+                {
+                    var charArr = w.ToUpper().ToCharArray();
+                    Array.Sort(charArr);
+                    return new string(charArr) == sorted ? 1 : 0;
+                });
+                if (word == null) continue;
+
+                word = word.ToUpper();
+
+                var anagramVerify = word.ToCharArray();
+                Array.Sort(anagramVerify);
+                if (new string(anagramVerify) != sorted) continue;
+                word = word.ToUpper();
+
+                multi.Sort();
+                var encrypted = new string(multi.Select(i => letterGrid[i/9][i%9]).ToArray());
+
+                var order = new List<int>();
+                var usedLetter = new bool[6];
+                var target = word.ToCharArray();
+                var source = multi.Select(i => letterGrid[i/9][i%9]).ToArray();
+
+                for (var i = 0; i < 6; i++)
+                {
+                    var need = target[i];
+                    for (var j = 0; j < 6; j++)
+                    {
+                        if (usedLetter[j]) continue;
+                        if (source[j] != need) continue;
+                        order.Add(j + 1);
+                        usedLetter[j] = true;
+                        break;
+                    }
+                }
+
+                var orderStr = string.Join(" ", order.Select(x => x.ToString()).ToArray());
+                var chessData = string.Join("", selected
+                    .OrderBy(p => p.Row * 9 + p.Column)
+                    .Select(p => (char)('A' + p.Column) + (p.Row + 1).ToString()).ToArray());
+                var pieceStrings = string.Join(", ", selected
+                    .OrderBy(p => p.Row * 9 + p.Column)
+                    .Select(p => $"{(char)('A' + p.Column)}{p.Row + 1}:{p.Type}")
+                    .ToArray());
+                
+                
+                debugLogs.Add("Pieces: " + pieceStrings);
+                debugLogs.Add("Order: " + orderStr);
+                
+                var screens = new List<string>();
+                for (var i = 0; i < chessData.Length; i += 8)
+                    screens.Add(chessData.Substring(i, Math.Min(8, chessData.Length - i)));
+                screens.Add(orderStr);
+                screens.Add(letterShifts);
+                screens.AddRange(keyWords);
+
                 return new CipherResult
                 {
-                    EncryptedWord = null,
-                    UnencryptedWord = null,
-                    ScreenTexts = new List<string> { "Error" }
+                    EncryptedWord = encrypted,
+                    UnencryptedWord = word,
+                    ScreenTexts = screens,
+                    DebugLogs = debugLogs
                 };
-
-            for (int attempt = 0; attempt < maxAttempts; attempt++)
-            {
-                var candidatePoolSize = Math.Min(allCandidates.Count, 15 + attempt);
-                var pool = allCandidates
-                    .OrderByDescending(p => p.EmptyBoardAttackCount)
-                    .ThenBy(p => random.Next())
-                    .Take(candidatePoolSize)
-                    .ToList();
-
-                var chosenPieces = new List<PieceCandidate>();
-                List<int> multiAttackedPositions = new List<int>();
-                string bestUnencrypted = null;
-                string bestEncrypted = null;
-                string bestChessData = null;
-                string orderString = null;
-
-                Func<int, bool> dfs = null;
-                dfs = startIndex =>
-                {
-                    if (chosenPieces.Count > 8) return false;
-
-                    
-                    var multiAttackCount = ComputeAttackCount(chosenPieces, rows, columns, out multiAttackedPositions);
-                    if (multiAttackCount > 6) return false;
-
-                    if (multiAttackCount == 6)
-                    {
-                        var letters = new char[6];
-                        int k = 0;
-                        foreach (var index in multiAttackedPositions)
-                        {
-                            int posRow = index / columns, posColumn = index % columns;
-                            var ch = letterGrid[posRow][posColumn];
-                            if (ch == '#') return false;
-                            letters[k++] = ch;
-                        }
-
-                        string foundWordCandidate;
-                        if (!TryFindAnagramWord(letters, out foundWordCandidate)) return false;
-                        bestUnencrypted = foundWordCandidate;
-                        multiAttackedPositions.Sort();
-                        bestEncrypted = new string(multiAttackedPositions.Select(idx => letterGrid[idx / columns][idx % columns]).ToArray());
-                        
-                        var scrambledLetters = multiAttackedPositions
-                            .Select(idx => letterGrid[idx / columns][idx % columns])
-                            .ToArray();
-                        
-                        var order = new List<int>();
-                        var used = new bool[scrambledLetters.Length];
-                        foreach (var target in bestUnencrypted)
-                        {
-                            for (int i = 0; i < scrambledLetters.Length; i++)
-                            {
-                                if (used[i] || scrambledLetters[i] != target) continue;
-                                order.Add(i + 1);
-                                used[i] = true;
-                                break;
-                            }
-                        }
-                        orderString = string.Join(" ", order.Select(x => x.ToString()).ToArray());
-
-                        bestChessData = string.Join("", chosenPieces
-                            .Select(pc => (char)('A' + pc.Column) + (pc.Row + 1).ToString()).ToArray());
-                        return true;
-                    }
-
-                    int knightCount = chosenPieces.Count(p => p.Type == PieceType.Knight);
-                    int rookCount = chosenPieces.Count(p => p.Type == PieceType.Rook);
-                    if (knightCount == 0 && chosenPieces.Count >= 2) return false;
-                    if (rookCount > 1) return false;
-
-                    for (int i = startIndex; i < pool.Count; i++)
-                    {
-                        if (rookCount + (pool[i].Type == PieceType.Rook ? 1 : 0) > 1) continue;
-                        chosenPieces.Add(pool[i]);
-                        if (dfs(i + 1)) return true;
-                        chosenPieces.RemoveAt(chosenPieces.Count - 1);
-                    }
-                    return false;
-                };
-
-                if (dfs(0))
-                {
-                    var screenTexts = new List<string>();
-                    for (int i = 0; i < bestChessData.Length; i += 8)
-                        screenTexts.Add(bestChessData.Substring(i, Math.Min(8, bestChessData.Length - i)));
-                    screenTexts.Add(orderString);
-                    screenTexts.Add(letterShifts);
-                    screenTexts.AddRange(keyWords);
-                    debugLogs.AddRange(chosenPieces.Select(piece => $"{piece.Type} placed at {(char)('A' + piece.Column)}, {piece.Row + 1}"));
-                    debugLogs.AddRange(multiAttackedPositions.Select(pos => $"{(char)('A' + pos % 9)}, {pos / 9 + 1} is attacked by more than one piece."));
-                    return new CipherResult
-                    {
-                        EncryptedWord = bestEncrypted,
-                        UnencryptedWord = bestUnencrypted,
-                        ScreenTexts = screenTexts,
-                        DebugLogs = debugLogs
-                    };
-                }
             }
 
-            return new CipherResult
+            return ErrorResult;
+        }
+
+        private void MarkAttacks(PieceCandidate p, bool[] occupied, int[] attackCount, int rows, int cols)
+        {
+            int r = p.Row, c = p.Column;
+            var idx = r * cols + c;
+            occupied[idx] = true;
+
+            switch (p.Type)
             {
-                EncryptedWord = null,
-                UnencryptedWord = null,
-                ScreenTexts = new List<string> { "Error" },
-                DebugLogs = new List<string> { "Error, generation failed." }
-            };
+                case PieceType.King:
+                {
+                    for (var dr = -1; dr <= 1; dr++)
+                    for (var dc = -1; dc <= 1; dc++)
+                    {
+                        if (dr == 0 && dc == 0) continue;
+                        int nr = r + dr, nc = c + dc;
+                        if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && !occupied[nr * cols + nc])
+                            attackCount[nr * cols + nc]++;
+                    }
+
+                    break;
+                }
+                case PieceType.Knight:
+                {
+                    for (int i = 0; i < 8; i++)
+                    {
+                        int nr = r + KnightMoves[i, 0];
+                        int nc = c + KnightMoves[i, 1];
+                        if (nr >= 0 && nr < rows && nc >= 0 && nc < cols)
+                        {
+                            int targetIdx = nr * cols + nc;
+                            // Knights jump → only care if target is empty
+                            if (!occupied[targetIdx])
+                                attackCount[targetIdx]++;
+                        }
+                    }
+
+                    break;
+                }
+                case PieceType.Bishop:
+                case PieceType.Rook:
+                {
+                    var dirs = p.Type == PieceType.Bishop ? BishopDirections : RookDirections;
+
+                    foreach (var d in dirs)
+                    {
+                        var nr = r + d[0];
+                        var nc = c + d[1];
+
+                        while (nr >= 0 && nr < rows && nc >= 0 && nc < cols)
+                        {
+                            var targetIdx = nr * cols + nc;
+
+                            if (occupied[targetIdx])
+                                break;
+
+                            attackCount[targetIdx]++;
+
+                            nr += d[0];
+                            nc += d[1];
+                        }
+                    }
+
+                    break;
+                }
+            }
         }
 
         public override void SetColor(ref MeshRenderer renderer)

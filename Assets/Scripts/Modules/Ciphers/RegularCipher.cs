@@ -42,6 +42,7 @@ namespace KModkit.Ciphers
         
         public override IEnumerator GeneratePuzzle(Action<CipherResult> onComplete)
         {
+            var data = new Data();
             List<string> keyWords;
             string letterShifts;
             var letterGrid = GenerateLetterGrid(out keyWords, out letterShifts);
@@ -88,7 +89,7 @@ namespace KModkit.Ciphers
                 }
             }
             Func<string, int> scorer = word => word.All(c => encryptableLetters.Contains(c)) ? 1 : 0;
-            var unencryptedWord = new Data().PickBestWord(6, scorer);
+            var unencryptedWord = data.PickBestWord(6, scorer);
             encryptedWord = "";
             var encryptionData = "";
             

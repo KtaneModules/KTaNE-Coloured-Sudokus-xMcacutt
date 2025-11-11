@@ -105,10 +105,11 @@ namespace KModkit.Ciphers
 
         public override IEnumerator GeneratePuzzle(Action<CipherResult> onComplete)
         {
+            var data = new Data();
             List<string> keyWords;
             string letterShifts;
-            List<string> hiddenKeywords; // Unused
-            string hiddenLetterShifts; // Unused
+            List<string> hiddenKeywords;
+            string hiddenLetterShifts;
             var initialOffset = random.Next(26);
             hiddenGrid = GenerateLetterGrid(out hiddenKeywords, out hiddenLetterShifts);
             List<string> debugLogs = new List<string>();
@@ -137,7 +138,7 @@ namespace KModkit.Ciphers
                 }
             }
             
-            var word = new Data().PickBestWord(6, ScoreWord);
+            var word = data.PickBestWord(6, ScoreWord);
             debugLogs.Add("Initial Combined Grid: " + string.Join("", combinedGrid.SelectMany(x => x.Select(n => n.ToString()).ToArray()).ToArray()));
             currentCell = new CellRef(4, 4);
             
@@ -174,18 +175,6 @@ namespace KModkit.Ciphers
             });
 
             yield break;
-        }
-
-        private string DirectionToString(int dir)
-        {
-            switch (dir)
-            {
-                case 0: return "U";
-                case 1: return "R";
-                case 2: return "D";
-                case 3: return "L";
-                default: return string.Empty;
-            }
         }
 
         private int ScoreWord(string word)

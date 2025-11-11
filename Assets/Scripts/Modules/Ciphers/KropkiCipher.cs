@@ -27,8 +27,8 @@ namespace KModkit.Ciphers
 
         public override IEnumerator GeneratePuzzle(Action<CipherResult> onComplete)
         {
-            var screenTexts = new List<string>();
             var data = new Data();
+            var screenTexts = new List<string>();
             var player1 = data.PickWord(5);
             var player2 = data.PickWord(5);
             screenTexts.Add(player1);
@@ -48,11 +48,11 @@ namespace KModkit.Ciphers
                 gameIndex++;
                 debugLogs.Add($"Game Number {gameIndex}");
                 var player1Cards = new List<Card> { new Card(row[0]), new Card(row[1]) };
-                debugLogs.Add($"{player1} Cards: " + player1Cards.Select(card => card.ToString()));
+                debugLogs.Add($"{player1} Cards: " + string.Join(", ", player1Cards.Select(card => card.ToString()).ToArray()));
                 var player2Cards = new List<Card> { new Card(row[2]), new Card(row[3]) };
-                debugLogs.Add($"{player2} Cards: " + player2Cards.Select(card => card.ToString()));
+                debugLogs.Add($"{player2} Cards: " + string.Join(", ", player2Cards.Select(card => card.ToString()).ToArray()));
                 var flop = new List<Card> { new Card(row[4]), new Card(row[5]), new Card(row[6]) };
-                debugLogs.Add("Flop: " + flop.Select(card => card.ToString()));
+                debugLogs.Add("Flop: " + string.Join(", ", flop.Select(card => card.ToString()).ToArray()));
                 var turn = new Card(row[7]);
                 debugLogs.Add("Turn: " + turn);
                 var river = new Card(row[8]);
@@ -119,12 +119,12 @@ namespace KModkit.Ciphers
             if (player1Wins > player2Wins)
             {
                 debugLogs.Add($"{player1} wins the match after {player1Wins + player2Wins} games.");
-                unencryptedWord = player1 + (char)('A' + player1Wins + player2Wins);
+                unencryptedWord = player1 + (char)('A' + player1Wins + player2Wins - 1);
             }
             else
             {
                 debugLogs.Add($"{player2} wins the match after {player1Wins + player2Wins} games.");
-                unencryptedWord = player2 + (char)('A' + player1Wins + player2Wins);
+                unencryptedWord = player2 + (char)('A' + player1Wins + player2Wins - 1);
             }
             
             var result = new CipherResult()

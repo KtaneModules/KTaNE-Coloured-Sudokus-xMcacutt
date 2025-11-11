@@ -25,9 +25,8 @@ namespace KModkit.Ciphers
 
         public override IEnumerator GeneratePuzzle(Action<CipherResult> onComplete)
         {
-            const int maxAttempts = 50;
             var data = new Data();
-
+            const int maxAttempts = 50;
             for (var attempt = 0; attempt < maxAttempts; attempt++)
             {
                 List<string> keyWords;

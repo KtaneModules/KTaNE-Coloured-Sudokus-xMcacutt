@@ -26,6 +26,7 @@ namespace KModkit.Ciphers
 
         public override IEnumerator GeneratePuzzle(Action<CipherResult> onComplete)
         {
+            var data = new Data();
             List<string> keyWords;
             string letterShifts;
             var letterGrid = GenerateLetterGrid(out keyWords, out letterShifts);
@@ -34,7 +35,7 @@ namespace KModkit.Ciphers
 
             for (var attempt = 0; attempt < maxAttempts; attempt++)
             {
-                var unencryptedWord = new Data().PickBestWord(6, w => ScoreWord(w, letterGrid, sudokuGrid));
+                var unencryptedWord = data.PickBestWord(6, w => ScoreWord(w, letterGrid, sudokuGrid));
                 List<char> encryptedLetters = new List<char>();
                 var encryptionData = "";
                 var puzzleValid = true;
@@ -103,15 +104,8 @@ namespace KModkit.Ciphers
                 onComplete(result);
                 yield break;
             }
-
-            var resultFail = new CipherResult()
-            {
-                EncryptedWord = null,
-                UnencryptedWord = null,
-                ScreenTexts = new List<string>() {"Error"},
-                DebugLogs = new List<string> { "Error, generation failed." }
-            };
-            onComplete(resultFail);
+            
+            onComplete(ErrorResult);
         }
 
         private CellRef FindFurthestValidCell(CellRef start, int direction, int targetHeight, int[][] solvedGrid, char[][] letterGrid)

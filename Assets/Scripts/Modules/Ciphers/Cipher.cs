@@ -53,8 +53,16 @@ namespace KModkit.Ciphers
     {
         public string Name { get; set; } = "";
         public bool IsMaze = false;
-        public static Random random = new Random();
-        static Data data = new Data();
+        protected static readonly Random Random = new Random();
+        private static readonly Data Data = new Data();
+
+        protected static readonly CipherResult ErrorResult = new CipherResult
+        {
+            EncryptedWord = null,
+            UnencryptedWord = null,
+            ScreenTexts = new List<string> { "Error", "Press", "Submit" },
+            DebugLogs = new List<string> { "Generation resulted in an error, press submit to continue." }
+        };
         
         protected static char[][] GenerateLetterGrid(out List<string> keyWords, out string letterShifts)
         {
@@ -63,8 +71,8 @@ namespace KModkit.Ciphers
             var key = "";
             for (var i = 0; i < 3; i++)
             {
-                keyWords.Add(data.PickWord(4, 7));
-                letterShifts += (char)('A' + random.Next(0, 26));
+                keyWords.Add(Data.PickWord(4, 7));
+                letterShifts += (char)('A' + Random.Next(0, 26));
                 var initialKey = keyWords[i].CreateKey();
                 key += initialKey.Replace(letterShifts[i], '#') + letterShifts[i];
             }

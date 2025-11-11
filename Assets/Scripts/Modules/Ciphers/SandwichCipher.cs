@@ -74,12 +74,7 @@ namespace KModkit.Ciphers
                 }
                 catch (Exception)
                 {
-                    result = new CipherResult
-                    {
-                        EncryptedWord = null,
-                        UnencryptedWord = null,
-                        ScreenTexts = new List<string> { "Error" }
-                    };
+                    result = ErrorResult;
                 }
                 finally
                 {
@@ -97,7 +92,6 @@ namespace KModkit.Ciphers
         private CipherResult RunGeneration()
         {
             var data = new Data();
-
             List<string> keyWords;
             string letterShifts;
             do
@@ -113,7 +107,7 @@ namespace KModkit.Ciphers
             outerGrid = new List<string>();
             innerGrid = new List<string>();
 
-            validBox = random.Next(9);
+            validBox = Random.Next(9);
             for (var box = 0; box < 9; box++)
             {
                 var row = 1 + 3 * (box / 3);

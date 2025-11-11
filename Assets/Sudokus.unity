@@ -156,6 +156,11 @@ Prefab:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 114478660663838060, guid: 9fabdfe08f6dda04695db933e1d02a44,
+        type: 2}
+      propertyPath: startSolvedDebug
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 9fabdfe08f6dda04695db933e1d02a44, type: 2}
   m_IsPrefabParent: 0

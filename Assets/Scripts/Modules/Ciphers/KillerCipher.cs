@@ -179,6 +179,7 @@ namespace KModkit.Ciphers
         
         public override IEnumerator GeneratePuzzle(Action<CipherResult> onComplete)
         {
+            var data = new Data();
             GenerateMaze();
             const string key = "ABCDEFGHIJKLMNOPQRSTUVWXYZ#ABCDEFGHIJKLMNOPQRSTUVWXYZ#ABCDEFGHIJKLMNOPQRSTUVWXYZ#";
             var shuffledKey = key.OrderBy(x => random.Next()).ToArray();
@@ -187,7 +188,7 @@ namespace KModkit.Ciphers
                 .ToArray();
             List<string> debugLogs = new List<string>();
             debugLogs.Add("Hidden letter grid: " + string.Join("", letterGrid.SelectMany(x => x.Select(n => n.ToString()).ToArray()).ToArray()));
-            var word = new Data().PickWord(6);
+            var word = data.PickWord(6);
             currentCell = new CellRef(random.Next(0, 9), random.Next(0, 9));
             
             var selectedCells = word

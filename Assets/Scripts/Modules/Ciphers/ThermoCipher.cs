@@ -66,6 +66,7 @@ namespace KModkit.Ciphers
 
         private CipherResult RunGeneration()
         {
+            var data = new Data();
             var testedWords = new HashSet<string>();
             for (var attempt = 0; attempt < 100; attempt++)
             {
@@ -76,7 +77,7 @@ namespace KModkit.Ciphers
                 debugLogs.Add($"Keywords: {string.Join("", keyWords.ToArray())}");
                 debugLogs.Add("Letter shifts: " + letterShifts);
                 debugLogs.Add("Letter grid: " + string.Join("", letterGrid.SelectMany(x => x.Select(n => n.ToString()).ToArray()).ToArray()));
-                var unencryptedWord = new Data().PickBestWord(6, w => ScoreWord(w, letterGrid, testedWords));
+                var unencryptedWord = data.PickBestWord(6, w => ScoreWord(w, letterGrid, testedWords));
                 testedWords.Add(unencryptedWord);
                 
                 var matches = letterGrid
@@ -137,13 +138,7 @@ namespace KModkit.Ciphers
                 };
             }
 
-            return new CipherResult
-            {
-                EncryptedWord = null,
-                UnencryptedWord = null,
-                ScreenTexts = new List<string> { "Error" },
-                DebugLogs = new List<string> { "Error, generation failed." }
-            };
+            return ErrorResult;
         }
 
         private struct PathResult

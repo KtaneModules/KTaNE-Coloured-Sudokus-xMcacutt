@@ -13,7 +13,7 @@ namespace KModkit
         public static Color Cyan = new Color(0.545f, 0.918f, 1.000f);    
         public static Color Orange = new Color(1.000f, 0.676f, 0.545f); 
         public static Color Purple = new Color(0.75f, 0.45f, 0.900f); 
-        public static Color Pink = new Color(1.0f, 0.7f, 0.9f);   
+        public static Color Pink = new Color(1.0f, 0.6f, 0.9f);   
         public static Color ThermoBlue = new Color(0.145f, 0.618f, 0.800f);   
         public static Color ThermoRed = new Color(0.850f, 0.2f, 0.2f);   
         public static Color PalindromeLine = new Color(0.9f, 0.9f, 0.9f);   
