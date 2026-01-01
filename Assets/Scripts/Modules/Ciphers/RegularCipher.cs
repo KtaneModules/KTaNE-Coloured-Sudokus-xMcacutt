@@ -28,6 +28,7 @@ namespace KModkit.Ciphers
         {
             this.regularSudokuData = regularSudokuData;
             Name = "Regular";
+            TwitchPlaysPoints = 6;
         }
         
         public RegularCipher(RegularSudokuData regularSudokuData)

@@ -29,6 +29,7 @@ namespace KModkit.Ciphers
                 .ToArray();
             thermos = sudokuData.thermos;
             Name = "Thermo";
+            TwitchPlaysPoints = 12;
         }
 
         public override IEnumerator GeneratePuzzle(Action<CipherResult> onComplete)

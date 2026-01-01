@@ -53,6 +53,7 @@ namespace KModkit.Ciphers
     {
         public string Name { get; set; } = "";
         public bool IsMaze = false;
+        public int TwitchPlaysPoints;
         protected static readonly Random Random = new Random();
         private static readonly Data Data = new Data();
 

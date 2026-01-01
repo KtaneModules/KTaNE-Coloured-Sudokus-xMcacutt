@@ -30,6 +30,7 @@ namespace KModkit.Ciphers
             sudokuGrid = expandedGrid;
             Name = "Sandwich";
             IsMaze = true;
+            TwitchPlaysPoints = 5;
         }
         
         private int level;
@@ -97,12 +98,14 @@ namespace KModkit.Ciphers
             do
             {
                 letterGrid = GenerateLetterGrid(out keyWords, out letterShifts);
-            } while (!data.AnyWordMatches(6, w => ScoreWord(w, letterGrid) == 1));
+            }
+            while (!data.AnyWordMatches(6, w => 
+                       w.Distinct().Count() == w.Length && ScoreWord(w, letterGrid) == 1));
             List<string> debugLogs = new List<string>();
             debugLogs.Add($"Keywords: {string.Join(" ", keyWords.ToArray())}");
             debugLogs.Add("Letter shifts: " + letterShifts);
             debugLogs.Add("Letter grid: " + string.Join("", letterGrid.SelectMany(x => x.Select(n => n.ToString()).ToArray()).ToArray()));
-            var unencryptedWord = data.PickBestWord(6, w => ScoreWord(w, letterGrid));
+            var unencryptedWord = data.PickBestWord(6, w => w.Distinct().Count() == w.Length && ScoreWord(w, letterGrid) == 1 ? 1 : 0);
             
             outerGrid = new List<string>();
             innerGrid = new List<string>();
@@ -139,12 +142,12 @@ namespace KModkit.Ciphers
                     {
                         var letter = unencryptedWord.First(c => letterPositions[c].Row == row * 3 + col);
                         var word = data.PickBestWord(4, 8, w => 
-                            w[0] % 9 == (letter - 'A') % 9 && CalculateSandwichSum(w) == value ? 1 : 0);
+                            w[0] - 'A' == letterPositions[letter].Col && CalculateSandwichSum(w) == value ? 1 : 0);
                         innerGrid.Add(word);
                         validInnerGridWords.Add(word);
                     }
                     else
-                        innerGrid.Add(data.PickBestWord(4, 8, w => CalculateSandwichSum(w) != value ? 1 : 0));
+                        innerGrid.Add(data.PickBestWord(4, 8, w => w[0] <= 'I' && w[0] >= 'A' && CalculateSandwichSum(w) != value ? 1 : 0));
                 }
             }
             

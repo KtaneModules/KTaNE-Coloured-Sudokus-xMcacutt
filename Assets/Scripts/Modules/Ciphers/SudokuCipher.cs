@@ -23,6 +23,13 @@ public struct SudokuData
     }
 }
 
+enum ViewMode
+{
+    Screens,
+    Maze,
+    Submission
+}
+
 public class SudokuCipher : Module
 {
     public Material sudokuCipherMaterial;
@@ -39,14 +46,14 @@ public class SudokuCipher : Module
     private string currentUnencryptedWord;
     private Cipher currentCipher;
     private List<string> screenTexts = new List<string>();
-    private List<string> backupScreenTexts = new List<string>();
+    private List<string> screensViewTexts = new List<string>();
     private string userInput = "";
     private int currentPage = 1;
     private bool moduleSelected;
-    private bool inSubmissionMode;
     private bool isGenerating;
-    private bool isMazeMode;
     private int stage = 1;
+    protected bool ZenModeActive;
+    private ViewMode mode = ViewMode.Screens;
     
     public static string[] supportedModuleIds = new string[]
     {
@@ -103,6 +110,8 @@ public class SudokuCipher : Module
 
     private void GoNextPage()
     {
+        if (mode != ViewMode.Screens)
+            return;
         nextButton.AddInteractionPunch();
         audio.PlaySoundAtTransform("ArrowPress.ogg", nextButton.transform);
         var maxPage = Mathf.CeilToInt(screenTexts.Count / 3f);
@@ -113,6 +122,8 @@ public class SudokuCipher : Module
     
     private void GoPrevPage()
     {
+        if (mode != ViewMode.Screens)
+            return;
         previousButton.AddInteractionPunch();
         audio.PlaySoundAtTransform("ArrowPress.ogg", previousButton.transform);
         var maxPage = Mathf.CeilToInt(screenTexts.Count / 3f);
@@ -140,6 +151,7 @@ public class SudokuCipher : Module
             mazeLives = result.MazeLives;
             currentMazeLives = mazeLives;
             screenTexts = result.ScreenTexts;
+            screensViewTexts = new List<string>(screenTexts);
             isGenerating = false;
             foreach (var line in result.DebugLogs)
                 Debug.LogFormat("[Sudoku Cipher #{0}] {1}", moduleId, line);
@@ -159,7 +171,7 @@ public class SudokuCipher : Module
         screen2.text = pageTexts.Length > 1 ? pageTexts[1] ?? "" : "";
         screen3.text = pageTexts.Length > 2 ? pageTexts[2] ?? "" : "";
 
-        if (inSubmissionMode && currentPage == 1)
+        if (mode == ViewMode.Submission && currentPage == 1)
         {
             screen1.text = "";
             screen2.text = "";
@@ -195,6 +207,29 @@ public class SudokuCipher : Module
         if (Input.GetKeyDown(KeyCode.Return))
             submitButton.OnInteract();
     }
+    
+    private void EnterScreens()
+    {
+        mode = ViewMode.Screens;
+        userInput = "";
+        currentPage = 1;
+        screenTexts = new List<string>(screensViewTexts);
+    }
+
+    private void EnterSubmission()
+    {
+        mode = ViewMode.Submission;
+        userInput = "";
+        currentPage = 1;
+    }
+
+    private void EnterMaze()
+    {
+        mode = ViewMode.Maze;
+        currentPage = 1;   
+        screenTexts.Clear();
+        MazeModeLetterPress("S");
+    }
 
     protected virtual void SubmitWord(KMSelectable button)
     {
@@ -202,55 +237,64 @@ public class SudokuCipher : Module
             return;
 
         button.AddInteractionPunch();
-
-        if ((inSubmissionMode && userInput.Equals(currentUnencryptedWord, StringComparison.OrdinalIgnoreCase)) 
-            || (screenTexts.Count > 0 && screenTexts[0] == "Error"))
-        {
-            if (screenTexts.Count > 0 && screenTexts[0] == "Error")
-                Debug.LogFormat("[Sudoku Cipher #{0}] {1}", moduleId, $"An error occurred for stage {{stage}} - {currentCipher.Name}, Stage Passed.");
-            else
-                Debug.LogFormat("[Sudoku Cipher #{0}] {1}", moduleId, $"Submitted {userInput}");
-            audio.PlaySoundAtTransform("SolveSFX", transform);
-            userInput = "";
-            screenTexts.Clear();
-            currentCipher = null;
-            inSubmissionMode = false;
-            var modules = bomb.GetModuleIDs().Where(x => supportedModuleIds.Contains(x)).ToList();
-            var solvedModules = bomb.GetSolvedModuleIDs().Where(x => supportedModuleIds.Contains(x)).ToList();
-            foreach (var m in solvedModules)
-                modules.Remove(m);
-
-            if (queuedSudokuTypes.Count > 0 && !isGenerating)
-            {
-                var sudoku = queuedSudokuTypes.Dequeue();
-                currentCipher = CipherFactory.CreateCipher(sudoku.type, sudoku.sudokuData);
-                PopulateScreens();
-                inSubmissionMode = false;
-            }
-            else if (modules.Count == 0 && !isGenerating)
-            {
-                Debug.LogFormat("[Sudoku Cipher #{0}] {1}", moduleId, $"Module Solved - No Remaining Sudokus");
-                sudokuCipherMeshRenderer.material.color = Color.HSVToRGB(0f, 0f, 0.5f);
-                module.HandlePass();
-                _isSolved = true;
-                inSubmissionMode = false;
-            }
-            return;
-        }
         
-        if (!inSubmissionMode)
+        switch(mode)
         {
-            inSubmissionMode = true;
-            backupScreenTexts = new List<string>(screenTexts);
-            userInput = "";
-            currentPage = 1;
-        }
-        else
-        {
-            Debug.LogFormat("[Sudoku Cipher #{0}] {1}", moduleId, $"Submitted {userInput}... Strike!");
-            audio.PlaySoundAtTransform("StrikeSFX", transform);
-            module.HandleStrike();
-            ResetToInitialState();
+            case ViewMode.Maze:
+                Debug.LogFormat("[Sudoku Cipher #{0}] Maze → Submission", moduleId);
+                EnterSubmission();
+                return;
+            case ViewMode.Submission:
+                if (string.IsNullOrEmpty(userInput))
+                {
+                    Debug.LogFormat("[Sudoku Cipher #{0}] Submission → Screens", moduleId);
+                    EnterScreens();
+                    return;
+                }
+                if (userInput.Equals(currentUnencryptedWord, StringComparison.OrdinalIgnoreCase)
+                    || (screenTexts.Count > 0 && screenTexts[0] == "Error"))
+                { 
+                    if (screenTexts.Count > 0 && screenTexts[0] == "Error")
+                        Debug.LogFormat("[Sudoku Cipher #{0}] {1}", moduleId, $"An error occurred for stage {{stage}} - {currentCipher.Name}, Stage Passed.");
+                    else
+                        Debug.LogFormat("[Sudoku Cipher #{0}] {1}", moduleId, $"Submitted {userInput}");
+                    audio.PlaySoundAtTransform("SolveSFX", transform);
+                    userInput = "";
+                    screenTexts.Clear();
+                    screensViewTexts.Clear();
+                    currentCipher = null;
+                    mode = ViewMode.Screens;
+                    var modules = bomb.GetModuleIDs().Where(x => supportedModuleIds.Contains(x)).ToList();
+                    var solvedModules = bomb.GetSolvedModuleIDs().Where(x => supportedModuleIds.Contains(x)).ToList();
+                    foreach (var m in solvedModules)
+                        modules.Remove(m);
+
+                    if (queuedSudokuTypes.Count > 0 && !isGenerating)
+                    {
+                        var sudoku = queuedSudokuTypes.Dequeue();
+                        currentCipher = CipherFactory.CreateCipher(sudoku.type, sudoku.sudokuData);
+                        PopulateScreens();
+                    }
+                    else if (modules.Count == 0 && !isGenerating)
+                    {
+                        Debug.LogFormat("[Sudoku Cipher #{0}] {1}", moduleId, $"Module Solved - No Remaining Sudokus");
+                        sudokuCipherMeshRenderer.material.color = Color.HSVToRGB(0f, 0f, 0.5f);
+                        module.HandlePass();
+                        _isSolved = true;
+                    }
+                }
+                else
+                {
+                    Debug.LogFormat("[Sudoku Cipher #{0}] {1}", moduleId, $"Submitted {userInput}... Strike!");
+                    audio.PlaySoundAtTransform("StrikeSFX", transform);
+                    module.HandleStrike();
+                    EnterScreens();
+                }
+                break;
+            case ViewMode.Screens:
+                Debug.LogFormat("[Sudoku Cipher #{0}] Screens → Submission", moduleId);
+                EnterSubmission();
+                return;
         }
     }
 
@@ -266,30 +310,24 @@ public class SudokuCipher : Module
         pressed.AddInteractionPunch(.2f);
         audio.PlaySoundAtTransform("KeyboardPress", transform);
 
-        if (!inSubmissionMode)
+        if (mode != ViewMode.Submission)
         {
             if (currentCipher.IsMaze)
             {
                 var letter = pressed.GetComponentInChildren<TextMesh>().text;
-                if (letter != "S" && !isMazeMode)
+                if (letter != "S" && mode != ViewMode.Maze)
                     return;
-                if (!isMazeMode)
+                if (mode != ViewMode.Maze)
                 {
                     Debug.LogFormat("[Sudoku Cipher #{0}] {1}", moduleId, "Entering Movement Mode");
-                    backupScreenTexts = new List<string>(screenTexts);
-                    screenTexts.Clear();
-                    MazeModeLetterPress("S");
-                    isMazeMode = true;
+                    EnterMaze();
                 }
                 else
                     MazeModeLetterPress(letter);
                 return;
             }
 
-            inSubmissionMode = true;
-            backupScreenTexts = new List<string>(screenTexts);
-            userInput = "";
-            currentPage = 1;
+            EnterSubmission();
         }
 
         if (userInput.Length < 6)
@@ -311,7 +349,7 @@ public class SudokuCipher : Module
                 Debug.LogFormat("[Sudoku Cipher #{0}] {1}", moduleId, $"Incorrect movement, Strike.");
                 audio.PlaySoundAtTransform("StrikeSFX", transform);
                 module.HandleStrike();
-                ResetToInitialState();
+                EnterScreens();
                 return;
             case "!":
             {
@@ -321,7 +359,7 @@ public class SudokuCipher : Module
                     Debug.LogFormat("[Sudoku Cipher #{0}] {1}", moduleId, $"Maze life lost.");
                     audio.PlaySoundAtTransform("StrikeSFX", transform);
                     module.HandleStrike();
-                    ResetToInitialState();
+                    EnterScreens();
                     PopulateScreens();
                     return;
                 }
@@ -335,6 +373,8 @@ public class SudokuCipher : Module
     
     public void Enqueue(string type, ISudokuData sudokuData)
     {
+        if (_isSolved)
+            return;
         if (currentCipher == null)
         {
             currentCipher = CipherFactory.CreateCipher(type, sudokuData);
@@ -347,15 +387,6 @@ public class SudokuCipher : Module
         }
     }
     
-    private void ResetToInitialState()
-    {
-        screenTexts = new List<string>(backupScreenTexts);
-        userInput = "";
-        inSubmissionMode = false;
-        isMazeMode = false;
-        currentPage = 1;
-    }
-    
 #pragma warning disable 414
     private readonly string TwitchHelpMessage = @"!{0} sub (press the submit button), !{0} l/r (move page left or right), !{0} input <text> (press the letter buttons on the keyboard)";
 #pragma warning restore 414
@@ -366,6 +397,8 @@ public class SudokuCipher : Module
         if (Regex.IsMatch(command, @"^\s*(?:sub)\s*$", RegexOptions.IgnoreCase))
         {
             yield return null;
+            if (mode == ViewMode.Submission && !ZenModeActive && currentCipher != null && userInput.Equals(currentUnencryptedWord, StringComparison.OrdinalIgnoreCase))
+                yield return "awardpointsonsolve " + currentCipher.TwitchPlaysPoints;
             SubmitWord(submitButton);
             yield break;
         }
@@ -406,13 +439,13 @@ public class SudokuCipher : Module
         audio.PlaySoundAtTransform("SolveSFX", transform);
         userInput = "";
         screenTexts.Clear();
+        screensViewTexts.Clear();
         currentCipher = null;
-        inSubmissionMode = false;
+        EnterScreens();
         Debug.LogFormat("[Sudoku Cipher #{0}] {1}", moduleId, $"Module Solved - Forced Solve");
         sudokuCipherMeshRenderer.material.color = Color.HSVToRGB(0f, 0f, 0.5f);
         module.HandlePass();
         _isSolved = true;
-        inSubmissionMode = false;
     }
 
     private int getPositionFromChar(char c)

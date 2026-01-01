@@ -97,9 +97,10 @@ namespace KModkit
                 {
                     Module.HandlePass();
                     
-                    SudokuCipher[] ciphers = FindObjectsOfType<SudokuCipher>();
+                    var ciphers = FindObjectsOfType<SudokuCipher>();
                     foreach (var cipher in ciphers)
-                        cipher.Enqueue(sudokuTypeName, SudokuData);
+                        if (cipher.transform.parent.GetInstanceID() == transform.parent.GetInstanceID())
+                            cipher.Enqueue(sudokuTypeName, SudokuData);
 
                     _isSolved = true;
                 }

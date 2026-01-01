@@ -40,6 +40,7 @@ namespace Modules.Ciphers
                 .Select(g => g.Select(x => x.value).ToArray())
                 .ToArray();
             Name = "AntiKnight";
+            TwitchPlaysPoints = 10;
         }
 
         private enum PieceType

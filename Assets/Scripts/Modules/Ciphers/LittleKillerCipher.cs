@@ -21,6 +21,7 @@ namespace KModkit.Ciphers
                 .ToArray();
             sudokuGrid = expandedGrid;
             Name = "Little Killer";
+            TwitchPlaysPoints = 13;
         }
 
         public override IEnumerator GeneratePuzzle(Action<CipherResult> onComplete)

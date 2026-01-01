@@ -21,6 +21,7 @@ namespace KModkit.Ciphers
             this.sudokuData = sudokuData;
             Name = "Palindrome";
             IsMaze = false;
+            TwitchPlaysPoints = 12;
         }
 
         public override IEnumerator GeneratePuzzle(Action<CipherResult> onComplete)

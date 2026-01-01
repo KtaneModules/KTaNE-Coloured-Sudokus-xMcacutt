@@ -42,6 +42,7 @@ namespace KModkit.Ciphers
             cages = sudokuData.cages;
             Name = "Killer";
             IsMaze = true;
+            TwitchPlaysPoints = 14;
         }
         
         public override string Move(int moduleId, string direction)

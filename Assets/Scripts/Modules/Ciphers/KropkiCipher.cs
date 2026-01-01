@@ -23,6 +23,7 @@ namespace KModkit.Ciphers
                 .ToArray();
             Name = "Kropki";
             IsMaze = false;
+            TwitchPlaysPoints = 20;
         }
 
         public override IEnumerator GeneratePuzzle(Action<CipherResult> onComplete)
@@ -73,7 +74,7 @@ namespace KModkit.Ciphers
                 if (p2Win)
                 {
                     player2Wins++;
-                    debugLogs.Add($"Game {gameIndex} winner is {player1} - {player1} folds after flop");
+                    debugLogs.Add($"Game {gameIndex} winner is {player2} - {player1} folds after flop");
                     continue;
                 }
 
@@ -89,7 +90,7 @@ namespace KModkit.Ciphers
                 if (p2Win)
                 {
                     player2Wins++;
-                    debugLogs.Add($"Game {gameIndex} winner is {player1} - {player1} folds after turn");
+                    debugLogs.Add($"Game {gameIndex} winner is {player2} - {player1} folds after turn");
                     continue;
                 }
                 
@@ -224,7 +225,7 @@ namespace KModkit.Ciphers
 
         static string ValueToRank(int value)
         {
-            switch (value % 3)
+            switch ((value - 1) % 3)
             {
                 case 0:
                     return "A";
@@ -238,7 +239,7 @@ namespace KModkit.Ciphers
 
         static string ValueToColour(int value)
         {
-            switch (value / 3)
+            switch ((value - 1) / 3)
             {
                 case 0:
                     return "R";
